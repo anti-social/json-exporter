@@ -3,9 +3,9 @@ use jsonpath::Found;
 use serde_json::Value;
 
 use std::collections::BTreeMap;
-use std::collections::HashSet;
+use std::collections::HashMap;
 
-use crate::config::{PreparedMetric, PreparedMetrics};
+use crate::config::{MetricType, PreparedMetric, PreparedMetrics};
 
 impl PreparedMetrics {
     pub fn process(&self, json: &Value, buf: &mut Vec<u8>) {
@@ -16,7 +16,10 @@ impl PreparedMetrics {
             )
         > = vec!();
         stack.push((self.iter(), None));
-        let mut seen_metrics = HashSet::new();
+        let mut seen_metrics = HashMap::new();
+
+        println!("{:?}", json);
+        println!("{:?}", jsonpath::Selector::new("$").unwrap().find(json).map(|v| v.value).collect::<Vec<_>>());
 
         while let Some((ref mut current_metrics, parent_state)) = stack.last_mut() {
             match current_metrics.next() {
@@ -43,12 +46,20 @@ impl PreparedMetrics {
 
                     if metric.metrics.is_empty() {
                         // leaf metric
+                        println!("! {}", &metric.selector.expression);
+                        for (json, resolved_metric) in &state {
+                            println!("  {}", resolved_metric);
+                            println!("  {:?}", json);
+                        }
 
                         for (json, resolved_metric) in &state {
-                            let with_metric_type = !seen_metrics.contains(&resolved_metric.name);
-                            if resolved_metric.dump(with_metric_type, json, buf) {
-                                if with_metric_type {
-                                    seen_metrics.insert(resolved_metric.name.clone());
+                            let metric_type = seen_metrics.get(&resolved_metric.name).cloned();
+                            let dumped_metric_type = resolved_metric.dump(json, metric_type, buf);
+                            if let Some(dumped_metric_type) = dumped_metric_type {
+                                if metric_type.is_none() {
+                                    seen_metrics.insert(
+                                        resolved_metric.name.clone(), dumped_metric_type
+                                    );
                                 }
                             } else {
                                 // TODO: log metric is not dumped
@@ -56,6 +67,11 @@ impl PreparedMetrics {
                         }
                     } else {
                         // parent_metric
+                        println!("> {}", &metric.selector.expression);
+                        for (json, resolved_metric) in &state {
+                            println!("  {}", resolved_metric);
+                            println!("  {:?}", json);
+                        }
 
                         stack.push((metric.metrics.iter(), Some(state)));
                     }
@@ -92,7 +108,7 @@ impl PreparedMetric {
 
         Some(ResolvedMetric {
             name,
-            metric_type: MetricType::Gauge,
+            metric_type: self.metric_type,
             labels,
         })
     }
@@ -121,15 +137,9 @@ impl PreparedMetric {
     }
 }
 
-enum MetricType {
-    Gauge,
-    Counter,
-    Untyped,
-}
-
 struct ResolvedMetric {
     name: String,
-    metric_type: MetricType,
+    metric_type: Option<MetricType>,
     // Use BTreeMap for reproducible tests
     labels: BTreeMap<String, String>,
 }
@@ -137,7 +147,6 @@ struct ResolvedMetric {
 impl ResolvedMetric {
     fn merge_with_parent(mut self, parent: &ResolvedMetric) -> Self {
         self.name = format!("{}_{}", &parent.name, &self.name);
-        println!("merge_with_parent: {}", &self.name);
         for (parent_label_name, parent_label_value) in parent.labels.iter() {
             self.labels.entry(parent_label_name.clone())
                 .or_insert(parent_label_value.clone());
@@ -145,17 +154,39 @@ impl ResolvedMetric {
         self
     }
 
-    fn dump(&self, with_metric_type: bool, value: &Value, buf: &mut Vec<u8>) -> bool {
+    fn dump(
+        &self,
+        value: &Value,
+        seen_metric_type: Option<MetricType>,
+        buf: &mut Vec<u8>
+    ) -> Option<MetricType> {
         // See: https://prometheus.io/docs/instrumenting/exposition_formats/#comments-help-text-and-type-information
 
         use MetricType::*;
 
-        let value = match self.metric_type {
+        let metric_type = match (self.metric_type, seen_metric_type) {
+            (Some(mtype), None) | (None, Some(mtype)) => mtype,
+            (Some(mtype), Some(seen)) => {
+                if mtype != seen {
+                    return None;
+                }
+                seen
+            }
+            (None, None) => {
+                match value {
+                    Value::String(_) | Value::Bool(_) => MetricType::Untyped,
+                    Value::Number(_) => MetricType::Gauge,
+                    _ => return None,
+                }
+            }
+        };
+
+        let value = match metric_type {
             Gauge | Counter => {
                 if let Some(v) = value.as_f64() {
                     v.to_string()
                 } else {
-                    return false;
+                    return None;
                 }
             }
             Untyped => {
@@ -163,15 +194,15 @@ impl ResolvedMetric {
                     Value::String(v) => v.clone(),
                     Value::Number(v) => v.to_string(),
                     Value::Bool(v) => v.to_string(),
-                    _ => return false,
+                    _ => return None,
                 }
             }
         };
 
-        if with_metric_type {
+        if seen_metric_type.is_none() {
             buf.extend(b"# TYPE ");
             buf.extend(self.name.as_bytes());
-            match self.metric_type {
+            match metric_type {
                 Gauge => buf.extend(b" gauge\n"),
                 Counter => buf.extend(b" counter\n"),
                 Untyped => buf.extend(b" untyped\n"),
@@ -181,7 +212,7 @@ impl ResolvedMetric {
         buf.push(b' ');
         buf.extend(value.as_bytes());
         buf.push(b'\n');
-        true
+        Some(metric_type)
     }
 
     fn dump_metric(&self, buf: &mut Vec<u8>) {
@@ -267,7 +298,7 @@ mod tests {
       }
     "#;
 
-    const INDICES_CONFIG: &'static str = indoc! {"
+    const INDICES_DOCS_CONFIG: &'static str = indoc! {"
       metrics:
       - name: shards_$1
         selector: _shards.*
@@ -287,6 +318,27 @@ mod tests {
           metrics:
           - name: docs_$1
             selector: docs.*
+    "};
+
+    const INDICES_SEARCH_CONFIG: &'static str = indoc! {"
+      metrics:
+      - name: indices
+        selector: indices.*
+        labels:
+        - name: index
+          value: $1
+        metrics:
+        - name: shards
+          selector: shards.*.*
+          labels:
+          - name: shard
+            value: $1
+          - name: node
+            value: ${.routing.node}
+          metrics:
+          - name: search_$1
+            type: counter
+            selector: search.*
     "};
 
     const INDICES_STATS: &'static str = r#"
@@ -365,6 +417,39 @@ mod tests {
       }
     "#;
 
+    const CLUSTER_HEALTH_CONFIG: &'static str = indoc! {"
+    metrics:
+    - name: cluster
+      # We need to capture a label from a root node
+      selector: ''
+      labels:
+      - name: cluster
+        value: ${.cluster_name}
+      metrics:
+      - name: status
+        selector: status
+    "};
+
+    const CLUSTER_HEALTH_STATS: &'static str = r#"
+    {
+      "cluster_name": "test-cluster",
+      "status": "green",
+      "timed_out": false,
+      "number_of_nodes": 3,
+      "number_of_data_nodes": 3,
+      "active_primary_shards": 680,
+      "active_shards": 1023,
+      "relocating_shards": 0,
+      "initializing_shards": 0,
+      "unassigned_shards": 0,
+      "delayed_unassigned_shards": 0,
+      "number_of_pending_tasks": 0,
+      "number_of_in_flight_fetch": 0,
+      "task_max_waiting_in_queue_millis": 0,
+      "active_shards_percent_as_number": 100.0
+    }
+    "#;
+
     #[test]
     fn test_process_with_flat_config() {
         let metrics_config: Metrics = serde_yaml::from_str(FLAT_DOCS_CONFIG).expect("config");
@@ -404,8 +489,8 @@ mod tests {
     }
 
     #[test]
-    fn test_indices() {
-        let metrics_config: Metrics = serde_yaml::from_str(INDICES_CONFIG).expect("config");
+    fn test_indices_docs() {
+        let metrics_config: Metrics = serde_yaml::from_str(INDICES_DOCS_CONFIG).expect("config");
         let prepared_metrics = metrics_config.prepare().expect("prepare config");
         let json: Value = serde_json::from_str(INDICES_STATS).expect("parsed json");
 
@@ -430,6 +515,56 @@ mod tests {
               indices_shards_docs_deleted{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 4
               indices_shards_docs_count{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 7471
               indices_shards_docs_deleted{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 4
+            "}
+        );
+    }
+
+    #[test]
+    fn test_indices_search() {
+        let metrics_config: Metrics = serde_yaml::from_str(INDICES_SEARCH_CONFIG).expect("config");
+        let prepared_metrics = metrics_config.prepare().expect("prepare config");
+        let json: Value = serde_json::from_str(INDICES_STATS).expect("parsed json");
+
+        let mut buf = vec!();
+        prepared_metrics.process(&json, &mut buf);
+        assert_eq!(
+            String::from_utf8(buf).expect("utf8 string"),
+            indoc! {"
+              # TYPE indices_shards_search_query_time_in_millis counter
+              indices_shards_search_query_time_in_millis\
+                {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 385
+              # TYPE indices_shards_search_query_total counter
+              indices_shards_search_query_total\
+                {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 8
+              indices_shards_search_query_time_in_millis\
+                {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 902
+              indices_shards_search_query_total\
+                {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 9
+              indices_shards_search_query_time_in_millis\
+                {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 533
+              indices_shards_search_query_total\
+                {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 6
+              indices_shards_search_query_time_in_millis\
+                {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 351
+              indices_shards_search_query_total\
+                {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 9
+            "}
+        );
+    }
+
+    #[test]
+    fn test_untyped_metric() {
+        let metrics_config: Metrics = serde_yaml::from_str(CLUSTER_HEALTH_CONFIG).expect("config");
+        let prepared_metrics = metrics_config.prepare().expect("prepare config");
+        let json: Value = serde_json::from_str(CLUSTER_HEALTH_STATS).expect("parsed json");
+
+        let mut buf = vec!();
+        prepared_metrics.process(&json, &mut buf);
+        assert_eq!(
+            String::from_utf8(buf).expect("utf8 string"),
+            indoc! {"
+              # TYPE cluster_status untyped
+              cluster_status{cluster=\"test-cluster\"} green
             "}
         );
     }

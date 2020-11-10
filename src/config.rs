@@ -1,4 +1,4 @@
-use anyhow::Error;
+use anyhow::{anyhow, Error as AnyhowError};
 
 use fehler::throws;
 
@@ -19,11 +19,21 @@ type TemplateProcessor = Box<dyn Fn(&Found) -> Option<String>>;
 #[derive(Deserialize)]
 pub struct Metric {
     name: String,
+    #[serde(rename = "type", default)]
+    metric_type: Option<MetricType>,
     selector: String,
     #[serde(default)]
     labels: Vec<Label>,
     #[serde(default)]
     metrics: Vec<Metric>,
+}
+
+#[derive(Deserialize, PartialEq, Clone, Copy)]
+#[serde(rename_all = "lowercase")]
+pub enum MetricType {
+    Gauge,
+    Counter,
+    Untyped,
 }
 
 #[derive(Deserialize)]
@@ -38,20 +48,23 @@ pub struct Metrics {
 }
 
 impl Metrics {
-    #[throws(Error)]
+    #[throws(AnyhowError)]
     pub fn prepare(&self) -> PreparedMetrics {
-        PreparedMetrics(PreparedMetrics::from_metrics(&self.metrics)?)
+        PreparedMetrics(PreparedMetrics::from_metrics(&self.metrics, None)?)
     }
 }
 
 pub struct PreparedMetrics(pub(crate) Vec<PreparedMetric>);
 
 impl PreparedMetrics {
-    #[throws(Error)]
-    fn from_metrics(metrics: &Vec<Metric>) -> Vec<PreparedMetric> {
+    #[throws(AnyhowError)]
+    fn from_metrics(
+        metrics: &Vec<Metric>,
+        metric_type: Option<MetricType>
+    ) -> Vec<PreparedMetric> {
         let mut prepared_metrics = vec!();
         for metric in metrics {
-            prepared_metrics.push(PreparedMetric::from_metric(metric)?);
+            prepared_metrics.push(PreparedMetric::from_metric(metric, metric_type)?);
         }
         prepared_metrics
     }
@@ -62,34 +75,69 @@ impl PreparedMetrics {
 }
 
 pub struct PreparedMetric {
+    pub metric_type: Option<MetricType>,
     pub name: String,
     pub name_processor: TemplateProcessor,
-    pub selector_expression: String,
-    pub selector: Selector,
+    pub selector: JsonSelector,
     pub labels: Vec<PreparedLabel>,
     pub metrics: Vec<PreparedMetric>
 }
 
 impl PreparedMetric {
-    #[throws(Error)]
-    fn from_metric(metric: &Metric) -> Self {
+    #[throws(AnyhowError)]
+    fn from_metric(
+        metric: &Metric,
+        parent_metric_type: Option<MetricType>,
+    ) -> Self {
+        let metric_type = metric.metric_type.or(parent_metric_type);
         // TODO: validate matric and label names
         let name = metric.name.clone();
         let name_processor = make_value_processor(&metric.name)?;
-        let selector_expression = format!("$.{}", metric.selector);
-        let selector = Selector::new(&selector_expression).unwrap();
+        let selector = JsonSelector::new(&metric.selector)?;
         let mut prepared_labels = vec!();
         for label in &metric.labels {
             prepared_labels.push(PreparedLabel::from_label(label)?);
         }
         Self {
+            metric_type,
             name,
             name_processor,
-            selector_expression,
             selector,
             labels: prepared_labels,
-            metrics: PreparedMetrics::from_metrics(&metric.metrics)?,
+            metrics: PreparedMetrics::from_metrics(&metric.metrics, metric_type)?,
         }
+    }
+}
+
+pub struct JsonSelector {
+    pub expression: String,
+    selector: Selector,
+}
+
+trait Captures<'a> { }
+impl<'a, T: ?Sized> Captures<'a> for T { }
+
+impl JsonSelector {
+    #[throws(AnyhowError)]
+    fn new(expression: &str) -> Self {
+        let expression = if expression.is_empty() {
+            "$".to_string()
+        } else {
+            format!("$.{}", expression)
+        };
+        let selector = Selector::new(&expression)
+            .map_err(|e| anyhow!(
+            "Error when creating json selector [{}]: {}", expression, e
+        ))?;
+
+        Self {
+            expression,
+            selector,
+        }
+    }
+
+    pub fn find<'a>(&'a self, root: &'a Value) -> impl Iterator<Item=Found<'_>> {
+        self.selector.find(root)
     }
 }
 
@@ -99,7 +147,7 @@ pub struct PreparedLabel {
 }
 
 impl PreparedLabel {
-    #[throws(Error)]
+    #[throws(AnyhowError)]
     fn from_label(label: &Label) -> Self {
         PreparedLabel {
             name: label.name.clone(),
@@ -108,7 +156,7 @@ impl PreparedLabel {
     }
 }
 
-fn make_value_processor(tmpl: &str) -> Result<TemplateProcessor, Error> {
+fn make_value_processor(tmpl: &str) -> Result<TemplateProcessor, AnyhowError> {
     let placeholders = string_with_placeholders(tmpl).map_err(|e| {
         e.map(|e| nom::Err::Error((e.input.to_string(), e.code)))
     })?.1;
@@ -132,7 +180,7 @@ fn make_value_processor(tmpl: &str) -> Result<TemplateProcessor, Error> {
             })
         }
         [Placeholder::Var(Var::Ident(ident))] => {
-            let selector = Selector::new(&format!("$.{}", ident)).unwrap();
+            let selector = JsonSelector::new(ident)?;
             Box::new(move |found| {
                 selector.find(found.value)
                     .next()
@@ -162,7 +210,8 @@ fn make_value_processor(tmpl: &str) -> Result<TemplateProcessor, Error> {
                             }
                         }
                         Placeholder::Var(Var::Ident(ident)) => {
-                            let selector = Selector::new(&format!("$.{}", ident)).unwrap();
+                            // FIXME: rid of unwrap
+                            let selector = JsonSelector::new(ident).unwrap();
                             selector.find(found.value)
                                 .next()
                                 .map(|found_value| found_value.value)
