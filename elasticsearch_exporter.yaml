@@ -1,0 +1,538 @@
+# Config that is almost compatible with https://github.com/justwatchcom/elasticsearch_exporter
+namespace: elasticsearch
+global_labels:
+- url: /
+  labels:
+  - name: cluster
+    value: ${.cluster_name}
+
+endpoints:
+- url: /_cluster/health
+  name: cluster_health
+  metrics:
+  - number_of_nodes
+  - number_of_data_nodes
+  - active_primary_shards
+  - active_shards
+  - relocating_shards
+  - initializing_shards
+  - unassigned_shards
+  - delayed_unassigned_shards
+  - number_of_pending_tasks
+  - number_of_in_flight_fetch
+  - task_max_waiting_in_queue_millis
+
+# To collect stats from all nodes use:
+# - url: /_nodes/stats
+- url: /_nodes/_local/stats
+  metrics:
+  - selector: nodes.*
+    name: ''
+    labels:
+    - name: host
+      value: ${.host}
+    - name: name
+      value: ${.name}
+    # TODO: es_master_node, es_data_node, es_ingest_node labels should be booleans
+    - name: es_master_node
+      value: ${.roles[?(@ == master)]}
+      modifier:
+        fn: bool
+        default: false
+    - name: es_data_node
+      value: ${.roles[?(@ == data)]}
+      modifier:
+        fn: bool
+        default: false
+    - name: es_ingest_node
+      value: ${.roles[?(@ == ingest)]}
+      modifier:
+        fn: bool
+        default: false
+    metrics:
+    - selector: os
+      metrics:
+      - cpu.percent
+      - selector: cpu.load_average
+        name: ''
+        metrics:
+        - name: load1
+          selector: ${.1m}
+        - name: load5
+          selector: ${.5m}
+        - name: load15
+          selector: ${.15m}
+    - name: mem
+      metrics:
+      - selector: free_in_bytes
+        name: free_bytes
+      - selector: used_in_bytes
+        name: used_bytes
+      - selector: total_in_bytes
+        name: total_bytes
+    - name: indices
+      metrics:
+      - name: fielddata
+        metrics:
+        - &cache-memory_size_bytes
+          selector: memory_size_in_bytes
+          name: memory_size_bytes
+        - &cache-evictions evictions
+      - selector: completion.size_in_bytes
+        name: completion_size_bytes
+      - selector: query_cache
+        metrics:
+        - *cache-memory_size_bytes
+        - *cache-evictions
+        - selector: total_count
+          name: total
+        - cache_size
+        - selector: cache_count
+          name: cache_total
+      - selector: query_cache
+        name: query
+        metrics: &cache-hit-miss-metrics
+        - selector: hit_count
+          name: cache_count
+          labels:
+          - name: cache
+            value: hit
+        - selector: miss_count
+          name: miss_count
+          labels:
+          - name: cache
+            value: miss
+      - selector: request_cache
+        metrics:
+        - *cache-memory_size_bytes
+        - *cache-evictions
+      - selector: request_cache
+        name: request
+        metrics: *cache-hit-miss-metrics
+      - selector: translog
+        metrics:
+        - operations
+        - size_in_bytes
+      - selector: get
+        metrics:
+        - selector: time_in_millis
+          name: time_seconds
+          multiplier: 0.001
+        - total
+        - selector: missing_time_in_millis
+          name: missing_time_seconds
+          multiplier: 0.001
+        - missing_total
+        - selector: exists_time_in_millis
+          name: exists_time_seconds
+          multiplier: 0.001
+        - exists_total
+      - selector: refresh
+        metrics:
+        - selector: total_time_in_millis
+          name: time_seconds_total
+          multiplier: 0.001
+        - total
+      - selector: search
+        metrics:
+        - open_contexts
+        - selector: query_time_in_millis
+          name: query_time_seconds
+          multiplier: 0.001
+        - query_total
+        - selector: fetch_time_in_millis
+          name: fetch_time_seconds
+          multiplier: 0.001
+        - fetch_total
+        - selector: suggest_time_in_millis
+          name: suggest_time_seconds
+          multiplier: 0.001
+        - suggest_total
+        - selector: scroll_time_in_millis
+          name: scroll_time_seconds
+          multiplier: 0.001
+        - scroll_total
+      - selector: docs
+        metrics:
+        - selector: count
+          name: ''
+        - deleted
+      - selector: store
+        metrics:
+        - name: size_bytes
+          selector: size_in_bytes
+      - selector: segments
+        metrics:
+        - selector: memory_in_bytes
+          name: memory_bytes
+        - count
+        - terms_memory_in_bytes
+        - index_writer_memory_in_bytes
+        - norms_memory_in_bytes
+        - stored_fields_memory_in_bytes
+        - doc_values_memory_in_bytes
+        - fixed_bit_set_memory_in_bytes
+        - term_vectors_memory_in_bytes
+        - points_memory_in_bytes
+        - version_map_memory_in_bytes
+      - selector: flush
+        metrics:
+        - total
+        - name: time_seconds
+          selector: total_time_in_millis
+          multiplier: 0.001
+      - selector: warmer
+        metrics:
+        - total
+        - selector: total_time_in_millis
+          name: time_seconds_total
+          multiplier: 0.001
+      - selector: indexing
+        metrics:
+        - selector: index_time_in_millis
+          name: index_time_seconds_total
+          multiplier: 0.001
+        - index_total
+        - selector: delete_time_in_millis
+          name: delete_time_seconds_total
+          multiplier: 0.001
+        - delete_total
+        - is_throttled
+        - selector: throttle_time_in_millis
+          name: throttle_time_seconds_total
+          multiplier: 0.001
+      - selector: merges
+        metrics:
+        - total
+        - current
+        - current_size_in_bytes
+        - selector: total_docs
+          name: docs_total
+        - selector: total_size_in_bytes
+          name: total_size_bytes_total
+        - selector: total_time_in_millis
+          name: total_time_seconds_total
+          multiplier: 0.001
+        - selector: total_throttled_time_in_millis
+          name: total_throttled_time_seconds_total
+          multiplier: 0.001
+      - selector: jvm
+        metrics:
+        - selector: mem
+          name: memory
+          metrics:
+          - selector: ''
+            labels:
+            - name: area
+              value: heap
+            metrics:
+            - selector: heap_used_in_bytes
+              name: used_bytes
+            - selector: heap_max_in_bytes
+              name: max_bytes
+            - name: committed_bytes
+              selector: heap_committed_in_bytes
+          - selector: ''
+            labels:
+            - name: area
+              value: non-heap
+            metrics:
+            - selector: non_heap_used_in_bytes
+              name: used_bytes
+            - selector: non_heap_committed_in_bytes
+              name: committed_bytes
+          - name: pool
+            selectors: pools.*
+            labels:
+            - name: pool
+              value: $1
+            metrics:
+            - selector: used_in_bytes
+              name: used_bytes
+            - selector: max_in_bytes
+              name: max_bytes
+            - selector: peak_used_in_bytes
+              name: peak_used_bytes
+            - selector: peak_max_in_bytes
+              name: peak_max_bytes
+        - selector: buffer_pools.*
+          name: buffer_pool
+          labels:
+          - name: type
+            value: $1
+          metrics:
+          - selector: used_in_bytes
+            name: used_bytes
+        - selector: gc.collectors.*
+          name: gc_collection
+          labels:
+          - name: gc
+            value: $2
+          metrics:
+          - selector: collection_count
+            name: seconds_count
+          - selector: collection_time_in_millis
+            name: seconds_sum
+            multiplier: 0.001
+      - selector: process
+        metrics:
+        - selector: cpu
+          # TODO: did not find sys & user cpu time in stats
+          metrics:
+          - percent
+          - selector: total_in_millis
+            name: cpu_time_seconds_sum
+            multiplier: 0.001
+            labels:
+            - name: type
+              value: total
+          - selector: sys_in_millis
+            name: cpu_time_seconds_sum
+            multiplier: 0.001
+            labels:
+            - name: type
+              value: sys
+          - selector: user_in_millis
+            name: cpu_time_seconds_sum
+            multiplier: 0.001
+            labels:
+            - name: type
+              value: user
+        - selector: mem
+          # TODO: did not find resident & share memory in stats
+          metrics:
+          - selector: total_resident_in_bytes
+            name: resident_size_bytes
+          - selector: total_share_in_bytes
+            name: share_size_bytes
+          - selector: total_virtual_in_bytes
+            name: virtual_size_bytes
+        - selector: open_file_descriptors
+          name: open_files_count
+        - selector: max_file_descriptors
+          name: max_files_descriptors
+      - selector: transport
+        metrics:
+        - selector: rx_count
+          name: rx_packets_total
+        - selector: rx_size_in_bytes
+          name: rx_size_bytes_total
+        - selector: tx_count
+          name: tx_packets_total
+        - selector: tx_size_in_bytes
+          name: tx_size_bytes_total
+      - selector: breakers.*
+        name: breakers
+        labels:
+        - name: breaker
+          value: $1
+        metrics:
+        - selector: estimated_size_in_bytes
+          name: estimated_size_bytes
+        - selector: limit_size_in_bytes
+          name: limit_size_bytes
+        - tripped
+        - overhead
+      - selector: thread_pool.*
+        name: thread_pool
+        labels:
+        - name: type
+          value: $1
+        metrics:
+        - selector: *
+          name: ${0}_count
+      - selector: fs
+        name: filesystem
+        metrics:
+        - selector: data.*
+          name: data
+          labels:
+          - name: mount
+            value: ${.mount}
+          - name: path
+            value: ${.path}
+          metrics:
+          - selector: available_in_bytes
+            name: available_bytes
+          - selector: free_in_bytes
+            name: free_bytes
+          - selector: total_in_bytes
+            name: size_bytes
+        - selector: io_stats.devices.*
+          name: io_stats_device
+          labels:
+          - name: device
+            value: $2
+          metrics:
+          - selector: operations
+            name: operations_count
+          - selector: read_operations
+            name: read_operations_count
+          - selector: write_operations
+            name: write_operations_count
+          - selector: read_kilobytes
+            name: read_size_kilobytes_sum
+          - selector: write_kilobytes
+            name: write_size_kilobytes_sum
+
+# To collect shard stats use:
+# - url: /_all/_stats?level=shards
+- url: /_all/_stats
+  metrics:
+  - selector: indices.*
+    name: indices
+    labels:
+    - name: index
+      value: $1
+    metrics:
+    - name: ''
+      selector: primaries
+      contextvars:
+      - name: type
+        value: primary
+      metrics: &index-metrics
+      - selector: docs.count
+        name: docs_${type}
+      - selector: docs.deleted
+        name: deleted_docs_${type}
+      - selector: store.size_in_bytes
+        name: store_size_bytes_${type}
+      - selector: segments
+        name: segment
+        metrics:
+        - selector: count
+          name: count_${type}
+        - selector: memory_in_bytes
+          name: memory_bytes_${type}
+        - selector: terms_memory_in_bytes
+          name: terms_memory_${type}
+        - selector: stored_fields_memory_in_bytes
+          name: fields_memory_bytes_${type}
+        - selector: term_vectors_memory_in_bytes
+          name: term_vectors_memory_${type}_bytes
+        - selector: norms_memory_in_bytes
+          name: norms_memory_bytes_${type}
+        - selector: points_memory_in_bytes
+          name: points_memory_bytes_${type}
+        - selector: doc_values_memory_in_bytes
+          name: doc_values_memory_bytes_${type}
+        - selector: index_writer_memory_in_bytes
+          name: index_writer_memory_bytes_${type}
+        - selector: version_map_memory_in_bytes
+          name: version_map_memory_bytes_${type}
+        - selector: fixed_bit_set_memory_in_byte
+          name: fixed_bit_set_memory_bytes_${type}
+      - selector: completion.size_in_bytes
+        name: completion_bytes_${type}
+    - selector: total
+      name: ''
+      contextvars:
+      - name: type
+        value: total
+      metrics: *index-metrics
+    - selector: total
+      name: index_stats
+      metrics:
+      - selector: search
+        metrics:
+        - open_contexts
+        - selector: query_time_in_millis
+          name: query_time_seconds_total
+          multiplier: 0.001
+        - query_total
+        - selector: fetch_time_in_millis
+          name: fetch_time_seconds_total
+          multiplier: 0.001
+        - fetch_total
+        - selector: scroll_time_in_millis
+          name: scroll_time_seconds_total
+          multiplier: 0.001
+        - scroll_current
+        - scroll_total
+        - selector: suggest_time_in_millis
+          name: suggest_time_seconds_total
+          multiplier: 0.001
+        - suggest_total
+      - selector: indexing
+        metrics:
+        - selector: index_time_in_millis
+          name: index_time_seconds_total
+          multiplier: 0.001
+        - index_total
+        - selector: delete_time_in_millis
+          name: delete_time_seconds_total
+          multiplier: 0.001
+        - delete_total
+        - noop_update_total
+        - selector: throttle_time_in_millis
+          name: throttle_time_seconds_total
+          multiplier: 0.001
+      - selector: get
+        metrics:
+        - selector: time_in_millis
+          name: time_seconds_total
+          multiplier: 0.001
+        - total
+      - selector: merges
+        name: merge
+        metrics:
+        - selector: total_time_in_millis
+          name: time_seconds_total
+          multiplier: 0.001
+        - total
+        - selector: total_throttled_time_in_millis
+          name: throttle_time_seconds_total
+          multiplier: 0.001
+        - selector: total_stopped_time_in_millis
+          name: stopped_time_seconds_total
+          multiplier: 0.001
+        - selector: total_auto_throttle_in_bytes
+          name: merge_auto_throttle_bytes_total
+      - selector: '[refresh,flush,warmer]'
+        metrics:
+        - selector: total_time_in_millis
+          name: time_seconds_total
+        - total
+      - selector: query_cache
+        metrics:
+        - selector: memory_size_in_bytes
+          name: memory_bytes_total
+        - cache_size
+        - selector: hit_count
+          name: hits_total
+        - selector: miss_count
+          name: misses_total
+        - selector: cache_count
+          name: caches_total
+        - selector: evictions
+          name: evictions_total
+      - selector: request_cache
+        metrics:
+        - selector: memory_size_in_bytes
+          name: cache_memory_bytes_total
+        - selector: hit_count
+          name: hits_total
+        - selector: miss_count
+          name: misses_total
+        - selector: evictions
+          name: evictions_total
+      - selector: fielddata
+        metrics:
+        - selector: memory_size_in_bytes
+          name: memory_bytes_total
+        - selector: evictions
+          name: evictions_total
+    - selector: shards.*.*
+      name: shards
+      labels:
+      - name: shard
+        value: $1
+      - name: node
+        value: ${.routing.node}
+      - name: primary
+        value: ${.routing.primary}
+      metrics:
+      - selector: docs.count
+        name: docs
+      - docs.deleted
+      - store.size_in_bytes
