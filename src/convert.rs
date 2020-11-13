@@ -501,64 +501,6 @@ mod tests {
         );
     }
 
-    const NESTED_DOCS_CONFIG: &'static str = indoc! {"
-      metrics:
-      - name: docs
-        selector: _all.*
-        labels:
-        - name: shard_type
-          value: $1
-        metrics:
-        - name: count
-          selector: docs.*
-          labels:
-          - name: count_type
-            value: $1
-    "};
-
-    const INDICES_DOCS_CONFIG: &'static str = indoc! {"
-      metrics:
-      - name: shards_$1
-        selector: _shards.*
-      - name: indices
-        selector: indices.*
-        labels:
-        - name: index
-          value: $1
-        metrics:
-        - name: shards
-          selector: shards.*.*
-          labels:
-          - name: shard
-            value: $1
-          - name: node
-            value: ${.routing.node}
-          metrics:
-          - name: docs_$1
-            selector: docs.*
-    "};
-
-    const INDICES_SEARCH_CONFIG: &'static str = indoc! {"
-      metrics:
-      - name: indices
-        selector: indices.*
-        labels:
-        - name: index
-          value: $1
-        metrics:
-        - name: shards
-          selector: shards.*.*
-          labels:
-          - name: shard
-            value: $1
-          - name: node
-            value: ${.routing.node}
-          metrics:
-          - name: search_$1
-            type: counter
-            selector: search.*
-    "};
-
     const INDICES_STATS: &'static str = r#"
       {
         "_shards": {
@@ -635,122 +577,96 @@ mod tests {
       }
     "#;
 
-    // #[test]
-    // fn test_process_with_flat_config() {
-    //     let metrics_config: Metrics = serde_yaml::from_str(FLAT_DOCS_CONFIG).expect("config");
-    //     let prepared_metrics = metrics_config.prepare().expect("prepare config");
-    //     let json: Value = serde_json::from_str(DOCS_STATS).expect("parsed json");
-    //
-    //     let mut buf = vec!();
-    //     prepared_metrics.process(&json, &mut buf);
-    //     assert_eq!(
-    //         String::from_utf8(buf).expect("utf8 string"),
-    //         indoc! {"
-    //           # TYPE docs_count gauge
-    //           docs_count{type=\"primaries\"} 167172864
-    //           docs_count{type=\"total\"} 334345728
-    //         "}
-    //     );
-    // }
-    //
-    // #[test]
-    // fn test_process_with_nested_config() {
-    //     let metrics_config: Metrics = serde_yaml::from_str(NESTED_DOCS_CONFIG).expect("config");
-    //     let prepared_metrics = metrics_config.prepare().expect("prepare config");
-    //     let json: Value = serde_json::from_str(DOCS_STATS).expect("parsed json");
-    //
-    //     let mut buf = vec!();
-    //     prepared_metrics.process(&json, &mut buf);
-    //     assert_eq!(
-    //         String::from_utf8(buf).expect("utf8 string"),
-    //         indoc! {"
-    //           # TYPE docs_count gauge
-    //           docs_count{count_type=\"count\",shard_type=\"primaries\"} 167172864
-    //           docs_count{count_type=\"deleted\",shard_type=\"primaries\"} 1345566
-    //           docs_count{count_type=\"count\",shard_type=\"total\"} 334345728
-    //           docs_count{count_type=\"deleted\",shard_type=\"total\"} 2825688
-    //         "}
-    //     );
-    // }
-    //
-    // #[test]
-    // fn test_indices_docs() {
-    //     let metrics_config: Metrics = serde_yaml::from_str(INDICES_DOCS_CONFIG).expect("config");
-    //     let prepared_metrics = metrics_config.prepare().expect("prepare config");
-    //     let json: Value = serde_json::from_str(INDICES_STATS).expect("parsed json");
-    //
-    //     let mut buf = vec!();
-    //     prepared_metrics.process(&json, &mut buf);
-    //     assert_eq!(
-    //         String::from_utf8(buf).expect("utf8 string"),
-    //         indoc! {"
-    //           # TYPE shards_failed gauge
-    //           shards_failed 0
-    //           # TYPE shards_successful gauge
-    //           shards_successful 1023
-    //           # TYPE shards_total gauge
-    //           shards_total 1023
-    //           # TYPE indices_shards_docs_count gauge
-    //           indices_shards_docs_count{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 71317
-    //           # TYPE indices_shards_docs_deleted gauge
-    //           indices_shards_docs_deleted{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 7724
-    //           indices_shards_docs_count{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 71317
-    //           indices_shards_docs_deleted{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 9410
-    //           indices_shards_docs_count{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 7471
-    //           indices_shards_docs_deleted{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 4
-    //           indices_shards_docs_count{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 7471
-    //           indices_shards_docs_deleted{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 4
-    //         "}
-    //     );
-    // }
-    //
-    // #[test]
-    // fn test_indices_search() {
-    //     let metrics_config: Metrics = serde_yaml::from_str(INDICES_SEARCH_CONFIG).expect("config");
-    //     let prepared_metrics = metrics_config.prepare().expect("prepare config");
-    //     let json: Value = serde_json::from_str(INDICES_STATS).expect("parsed json");
-    //
-    //     let mut buf = vec!();
-    //     prepared_metrics.process(&json, &mut buf);
-    //     assert_eq!(
-    //         String::from_utf8(buf).expect("utf8 string"),
-    //         indoc! {"
-    //           # TYPE indices_shards_search_query_time_in_millis counter
-    //           indices_shards_search_query_time_in_millis\
-    //             {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 385
-    //           # TYPE indices_shards_search_query_total counter
-    //           indices_shards_search_query_total\
-    //             {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 8
-    //           indices_shards_search_query_time_in_millis\
-    //             {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 902
-    //           indices_shards_search_query_total\
-    //             {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 9
-    //           indices_shards_search_query_time_in_millis\
-    //             {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 533
-    //           indices_shards_search_query_total\
-    //             {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 6
-    //           indices_shards_search_query_time_in_millis\
-    //             {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 351
-    //           indices_shards_search_query_total\
-    //             {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 9
-    //         "}
-    //     );
-    // }
-    //
-    // #[test]
-    // fn test_untyped_metric() {
-    //     let metrics_config: Metrics = serde_yaml::from_str(CLUSTER_HEALTH_CONFIG).expect("config");
-    //     let prepared_metrics = metrics_config.prepare().expect("prepare config");
-    //     let json: Value = serde_json::from_str(CLUSTER_HEALTH_STATS).expect("parsed json");
-    //
-    //     let mut buf = vec!();
-    //     prepared_metrics.process(&json, &mut buf);
-    //     assert_eq!(
-    //         String::from_utf8(buf).expect("utf8 string"),
-    //         indoc! {"
-    //           # TYPE cluster_status untyped
-    //           cluster_status{cluster=\"test-cluster\"} green
-    //         "}
-    //     );
-    // }
+    #[test]
+    fn test_indices_docs() {
+        let config = indoc! {"
+            metrics:
+            - path: _shards.*
+              name: shards_$1
+            - path: indices.*
+              name: indices
+              labels:
+              - name: index
+                value: $1
+              metrics:
+              - path: shards.*.*
+                name: shards
+                labels:
+                - name: shard
+                  value: $1
+                - name: node
+                  value: ${.routing.node}
+                metrics:
+                - path: docs.*
+                  name: docs_$1
+        "};
+        assert_eq!(
+            process_with_config(config, INDICES_STATS),
+            indoc! {"
+              # TYPE shards_failed gauge
+              shards_failed 0
+              # TYPE shards_successful gauge
+              shards_successful 1023
+              # TYPE shards_total gauge
+              shards_total 1023
+              # TYPE indices_shards_docs_count gauge
+              indices_shards_docs_count{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 71317
+              # TYPE indices_shards_docs_deleted gauge
+              indices_shards_docs_deleted{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 7724
+              indices_shards_docs_count{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 71317
+              indices_shards_docs_deleted{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 9410
+              indices_shards_docs_count{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 7471
+              indices_shards_docs_deleted{index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 4
+              indices_shards_docs_count{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 7471
+              indices_shards_docs_deleted{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 4
+            "}
+        );
+    }
+
+    #[test]
+    fn test_indices_search() {
+        let config = indoc! {"
+            metrics:
+            - path: indices.*
+              name: indices
+              labels:
+              - name: index
+                value: $1
+              metrics:
+              - path: shards.*.*
+                name: shards
+                labels:
+                - name: shard
+                  value: $1
+                - name: node
+                  value: ${.routing.node}
+                metrics:
+                - path: search.*
+                  type: counter
+                  name: search_$1
+        "};
+        assert_eq!(
+            process_with_config(config, INDICES_STATS),
+            indoc! {"
+              # TYPE indices_shards_search_query_time_in_millis counter
+              indices_shards_search_query_time_in_millis\
+                {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 385
+              # TYPE indices_shards_search_query_total counter
+              indices_shards_search_query_total\
+                {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"0\"} 8
+              indices_shards_search_query_time_in_millis\
+                {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 902
+              indices_shards_search_query_total\
+                {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"0\"} 9
+              indices_shards_search_query_time_in_millis\
+                {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 533
+              indices_shards_search_query_total\
+                {index=\"catalog\",node=\"kVLufQsXRL-q9l5KN42RIQ\",shard=\"1\"} 6
+              indices_shards_search_query_time_in_millis\
+                {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 351
+              indices_shards_search_query_total\
+                {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 9
+            "}
+        );
+    }
 }
