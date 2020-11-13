@@ -18,10 +18,10 @@ type TemplateProcessor = Box<dyn Fn(&Found) -> Option<String>>;
 
 #[derive(Deserialize)]
 pub struct Metric {
-    name: String,
+    path: String,
+    name: Option<String>,
     #[serde(rename = "type", default)]
     metric_type: Option<MetricType>,
-    selector: String,
     #[serde(default)]
     labels: Vec<Label>,
     #[serde(default)]
@@ -75,10 +75,10 @@ impl PreparedMetrics {
 }
 
 pub struct PreparedMetric {
-    pub metric_type: Option<MetricType>,
-    pub name: String,
-    pub name_processor: TemplateProcessor,
     pub selector: JsonSelector,
+    pub metric_type: Option<MetricType>,
+    pub name: Option<String>,
+    pub name_processor: Option<TemplateProcessor>,
     pub labels: Vec<PreparedLabel>,
     pub metrics: Vec<PreparedMetric>
 }
@@ -92,8 +92,9 @@ impl PreparedMetric {
         let metric_type = metric.metric_type.or(parent_metric_type);
         // TODO: validate matric and label names
         let name = metric.name.clone();
-        let name_processor = make_value_processor(&metric.name)?;
-        let selector = JsonSelector::new(&metric.selector)?;
+        let name_processor = metric.name.as_ref().map(|n| make_value_processor(n))
+            .transpose()?;
+        let selector = JsonSelector::new(&metric.path)?;
         let mut prepared_labels = vec!();
         for label in &metric.labels {
             prepared_labels.push(PreparedLabel::from_label(label)?);
@@ -157,6 +158,11 @@ impl PreparedLabel {
 }
 
 fn make_value_processor(tmpl: &str) -> Result<TemplateProcessor, AnyhowError> {
+    if tmpl.is_empty() {
+        let value = tmpl.to_string();
+        return Ok(Box::new(move |_| Some(value.clone())));
+    }
+
     let placeholders = string_with_placeholders(tmpl).map_err(|e| {
         e.map(|e| nom::Err::Error((e.input.to_string(), e.code)))
     })?.1;
@@ -242,10 +248,10 @@ mod tests {
         let _metrics: Metrics = serde_yaml::from_str(indoc! {"
           metrics:
           - name: test
-            selector: asdf
+            path: asdf
             metrics:
             - name: 1234
-              selector: fdsa.*
+              path: fdsa.*
               labels:
               - name: test
                 value: $0
