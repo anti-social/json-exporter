@@ -24,7 +24,28 @@ use crate::tmpl::{
 type TemplateProcessor = Box<dyn Fn(&Found) -> Option<String>>;
 
 #[derive(Deserialize)]
+pub struct Config {
+    namespace: Option<String>,
+    global_labels: Vec<GlobalLabel>,
+    endpoints: Vec<Endpoint>,
+}
+
+#[derive(Deserialize)]
+pub struct GlobalLabel {
+    url: String,
+    labels: Vec<Label>,
+}
+
+#[derive(Deserialize)]
+pub struct Endpoint {
+    url: String,
+    #[serde(flatten)]
+    metrics: Metrics,
+}
+
+#[derive(Deserialize)]
 pub struct Metrics {
+    name: Option<String>,
     #[serde(deserialize_with = "deserialize_metrics")]
     metrics: Vec<Metric>,
 }
@@ -301,7 +322,8 @@ fn make_value_processor(tmpl: &str) -> Result<TemplateProcessor, AnyhowError> {
 mod tests {
     use indoc::indoc;
     use serde_yaml;
-    use crate::config::Metrics;
+    use std::fs::File;
+    use crate::config::{Config, Metrics};
 
     #[test]
     fn test_parsing_config() {
@@ -314,5 +336,12 @@ mod tests {
               name: '1234'
         "})
             .expect("valid yaml");
+    }
+
+    #[test]
+    fn test_elasticsearch_exporter_config() {
+        let filename = "elasticsearch_exporter.yaml";
+        let file = File::open(filename).expect(filename);
+        let _config: Config = serde_yaml::from_reader(file).unwrap();
     }
 }

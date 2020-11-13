@@ -1,4 +1,10 @@
 # Config that is almost compatible with https://github.com/justwatchcom/elasticsearch_exporter
+
+_defaults:
+  ms_to_secs: &ms-to-secs
+    name: mul
+    args: 0.001
+
 namespace: elasticsearch
 global_labels:
 - url: /
@@ -34,21 +40,15 @@ endpoints:
     - name: name
       value: ${.name}
     # TODO: es_master_node, es_data_node, es_ingest_node labels should be booleans
-    - name: es_master_node
-      value: ${.roles[?(@ == master)]}
-      modifier:
-        fn: bool
-        default: false
-    - name: es_data_node
-      value: ${.roles[?(@ == data)]}
-      modifier:
-        fn: bool
-        default: false
-    - name: es_ingest_node
-      value: ${.roles[?(@ == ingest)]}
-      modifier:
-        fn: bool
-        default: false
+    # - name: es_master_node
+    #   value: ${.roles[?(@ == master)]}
+    #   modifiers: [bool]
+    # - name: es_data_node
+    #   value: ${.roles[?(@ == data)]}
+    #   modifiers: [bool]
+    # - name: es_ingest_node
+    #   value: ${.roles[?(@ == ingest)]}
+    #   modifiers: [bool]
     metrics:
     - path: os
       metrics:
@@ -117,40 +117,40 @@ endpoints:
         metrics:
         - path: time_in_millis
           name: time_seconds
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - total
         - path: missing_time_in_millis
           name: missing_time_seconds
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - missing_total
         - path: exists_time_in_millis
           name: exists_time_seconds
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - exists_total
       - path: refresh
         metrics:
         - path: total_time_in_millis
           name: time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - total
       - path: search
         metrics:
         - open_contexts
         - path: query_time_in_millis
           name: query_time_seconds
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - query_total
         - path: fetch_time_in_millis
           name: fetch_time_seconds
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - fetch_total
         - path: suggest_time_in_millis
           name: suggest_time_seconds
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - suggest_total
         - path: scroll_time_in_millis
           name: scroll_time_seconds
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - scroll_total
       - path: docs
         metrics:
@@ -180,27 +180,27 @@ endpoints:
         - total
         - name: time_seconds
           path: total_time_in_millis
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
       - path: warmer
         metrics:
         - total
         - path: total_time_in_millis
           name: time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
       - path: indexing
         metrics:
         - path: index_time_in_millis
           name: index_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - index_total
         - path: delete_time_in_millis
           name: delete_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - delete_total
         - is_throttled
         - path: throttle_time_in_millis
           name: throttle_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
       - path: merges
         metrics:
         - total
@@ -212,10 +212,10 @@ endpoints:
           name: total_size_bytes_total
         - path: total_time_in_millis
           name: total_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - path: total_throttled_time_in_millis
           name: total_throttled_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
       - path: jvm
         metrics:
         - path: mem
@@ -241,8 +241,8 @@ endpoints:
               name: used_bytes
             - path: non_heap_committed_in_bytes
               name: committed_bytes
-          - name: pool
-            selectors: pools.*
+          - path: pools.*
+            name: pool
             labels:
             - name: pool
               value: $1
@@ -273,7 +273,7 @@ endpoints:
             name: seconds_count
           - path: collection_time_in_millis
             name: seconds_sum
-            multiplier: 0.001
+            modifiers: [*ms-to-secs]
       - path: process
         metrics:
         - path: cpu
@@ -282,19 +282,19 @@ endpoints:
           - percent
           - path: total_in_millis
             name: cpu_time_seconds_sum
-            multiplier: 0.001
+            modifiers: [*ms-to-secs]
             labels:
             - name: type
               value: total
           - path: sys_in_millis
             name: cpu_time_seconds_sum
-            multiplier: 0.001
+            modifiers: [*ms-to-secs]
             labels:
             - name: type
               value: sys
           - path: user_in_millis
             name: cpu_time_seconds_sum
-            multiplier: 0.001
+            modifiers: [*ms-to-secs]
             labels:
             - name: type
               value: user
@@ -339,7 +339,7 @@ endpoints:
         - name: type
           value: $1
         metrics:
-        - path: *
+        - path: '*'
           name: ${0}_count
       - path: fs
         name: filesystem
@@ -438,54 +438,54 @@ endpoints:
         - open_contexts
         - path: query_time_in_millis
           name: query_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - query_total
         - path: fetch_time_in_millis
           name: fetch_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - fetch_total
         - path: scroll_time_in_millis
           name: scroll_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - scroll_current
         - scroll_total
         - path: suggest_time_in_millis
           name: suggest_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - suggest_total
       - path: indexing
         metrics:
         - path: index_time_in_millis
           name: index_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - index_total
         - path: delete_time_in_millis
           name: delete_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - delete_total
         - noop_update_total
         - path: throttle_time_in_millis
           name: throttle_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
       - path: get
         metrics:
         - path: time_in_millis
           name: time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - total
       - path: merges
         name: merge
         metrics:
         - path: total_time_in_millis
           name: time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - total
         - path: total_throttled_time_in_millis
           name: throttle_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - path: total_stopped_time_in_millis
           name: stopped_time_seconds_total
-          multiplier: 0.001
+          modifiers: [*ms-to-secs]
         - path: total_auto_throttle_in_bytes
           name: merge_auto_throttle_bytes_total
       - path: '[refresh,flush,warmer]'
