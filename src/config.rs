@@ -4,8 +4,15 @@ use fehler::throws;
 
 use jsonpath::{Selector, Found, Step};
 
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
+use serde::de::{Visitor, SeqAccess};
 use serde_json::Value;
+
+use std::fmt;
+use std::marker::PhantomData;
+use std::str::FromStr;
+
+use void::Void;
 
 use crate::tmpl::{
     string_with_placeholders,
@@ -17,6 +24,19 @@ use crate::tmpl::{
 type TemplateProcessor = Box<dyn Fn(&Found) -> Option<String>>;
 
 #[derive(Deserialize)]
+pub struct Metrics {
+    #[serde(deserialize_with = "deserialize_metrics")]
+    metrics: Vec<Metric>,
+}
+
+impl Metrics {
+    #[throws(AnyhowError)]
+    pub fn prepare(&self) -> PreparedMetrics {
+        PreparedMetrics(PreparedMetrics::from_metrics(&self.metrics, None)?)
+    }
+}
+
+#[derive(Deserialize, Default)]
 pub struct Metric {
     path: String,
     name: Option<String>,
@@ -25,7 +45,59 @@ pub struct Metric {
     #[serde(default)]
     labels: Vec<Label>,
     #[serde(default)]
+    #[serde(deserialize_with = "deserialize_metrics")]
     metrics: Vec<Metric>,
+}
+
+impl FromStr for Metric {
+    type Err = Void;
+
+    #[throws(Self::Err)]
+    fn from_str(s: &str) -> Self {
+        Metric {
+            path: s.to_string(),
+            ..Default::default()
+        }
+    }
+}
+
+fn deserialize_metrics<'de, D>(deserializer: D) -> Result<Vec<Metric>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum MetricOrPath {
+        Metric(Metric),
+        Path(String),
+    }
+
+    struct MetricsVisitor(PhantomData<fn() -> Metric>);
+
+    impl<'de> Visitor<'de> for MetricsVisitor {
+        type Value = Vec<Metric>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("sequence")
+        }
+
+        fn visit_seq<S>(self, mut seq: S) -> Result<Self::Value, S::Error>
+        where
+            S: SeqAccess<'de>,
+        {
+            let mut metrics = vec!();
+            while let Some(v) = seq.next_element::<MetricOrPath>()? {
+                let metric = match v {
+                    MetricOrPath::Metric(m) => m,
+                    MetricOrPath::Path(p) => Metric::from_str(&p).unwrap(),
+                };
+                metrics.push(metric);
+            }
+            Ok(metrics)
+        }
+    }
+
+    deserializer.deserialize_any(MetricsVisitor(PhantomData))
 }
 
 #[derive(Deserialize, PartialEq, Clone, Copy)]
@@ -40,18 +112,6 @@ pub enum MetricType {
 pub struct Label {
     name: String,
     value: String,
-}
-
-#[derive(Deserialize)]
-pub struct Metrics {
-    metrics: Vec<Metric>,
-}
-
-impl Metrics {
-    #[throws(AnyhowError)]
-    pub fn prepare(&self) -> PreparedMetrics {
-        PreparedMetrics(PreparedMetrics::from_metrics(&self.metrics, None)?)
-    }
 }
 
 pub struct PreparedMetrics(pub(crate) Vec<PreparedMetric>);
@@ -247,15 +307,11 @@ mod tests {
     fn test_parsing_config() {
         let _metrics: Metrics = serde_yaml::from_str(indoc! {"
           metrics:
-          - name: test
-            path: asdf
+          - path: asdf
+            name: test
             metrics:
-            - name: 1234
-              path: fdsa.*
-              labels:
-              - name: test
-                value: $0
-
+            - path: fdsa
+              name: '1234'
         "})
             .expect("valid yaml");
     }

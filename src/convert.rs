@@ -290,7 +290,7 @@ impl ResolvedMetric {
             Value::Bool(v) if *v => {
                 buf.push(b'1')
             }
-            Value::Bool(v) => {
+            Value::Bool(_) => {
                 buf.push(b'0')
             }
             Value::String(v) => {
@@ -479,6 +479,24 @@ mod tests {
             indoc! {r#"
                 # TYPE status untyped
                 status green
+            "#}
+        );
+    }
+
+    #[test]
+    fn test_simplified_metric() {
+        let config = indoc! {"
+            metrics:
+            - active_shards
+            - unassigned_shards
+        "};
+        assert_eq!(
+            process_with_config(config, CLUSTER_HEALTH_STATS),
+            indoc! {r#"
+                # TYPE active_shards gauge
+                active_shards 1023
+                # TYPE unassigned_shards gauge
+                unassigned_shards 0
             "#}
         );
     }
