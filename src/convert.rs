@@ -54,9 +54,28 @@ impl PreparedMetrics {
                             println!("  {:?}", json);
                         }
 
-                        for (json, resolved_metric) in &state {
+                        'metrics_loop: for (json, resolved_metric) in &state {
+                            // TODO: apply filters for all values not only leaf
+                            let mut _value;
+                            let value = if metric.filters.is_empty() {
+                                json
+                            } else {
+                                _value = (*json).clone();
+                                for filter in &metric.filters {
+                                    match filter.apply(&_value) {
+                                        Ok(v) => {
+                                            _value = v;
+                                        }
+                                        Err(e) => {
+                                            // TODO: log error
+                                            continue 'metrics_loop;
+                                        },
+                                    }
+                                }
+                                &_value
+                            };
                             let metric_type = seen_metrics.get(&resolved_metric.name).cloned();
-                            let dumped_metric_type = resolved_metric.dump(json, metric_type, buf);
+                            let dumped_metric_type = resolved_metric.dump(value, metric_type, buf);
                             if let Some(dumped_metric_type) = dumped_metric_type {
                                 if metric_type.is_none() {
                                     seen_metrics.insert(
@@ -116,11 +135,6 @@ impl PreparedMetric {
                 metric_name
             }
         };
-        // let name = if let Some(metric_name) = (self.name_processor)(found) {
-        //     metric_name
-        // } else {
-        //     return None;
-        // };
 
         let mut labels = BTreeMap::new();
         for label in &self.labels {
@@ -666,6 +680,38 @@ mod tests {
                 {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 351
               indices_shards_search_query_total\
                 {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 9
+            "}
+        );
+    }
+
+    #[test]
+    fn test_multiply_filter() {
+        let config = indoc! {"
+            metrics:
+            - path: query_time_in_millis
+              name: query_time_in_seconds
+              modifiers:
+              - name: mul
+                args: 0.001
+            - path: index_time_in_millis
+              name: index_time_in_seconds
+              modifiers:
+              - name: div
+                args: 1000
+        "};
+        let json = indoc! {r#"
+            {
+              "query_time_in_millis": 112,
+              "index_time_in_millis": 23.4
+            }
+        "#};
+        assert_eq!(
+            process_with_config(config, json),
+            indoc! {"
+                # TYPE query_time_in_seconds gauge
+                query_time_in_seconds 0.112
+                # TYPE index_time_in_seconds gauge
+                index_time_in_seconds 0.023399999999999997
             "}
         );
     }

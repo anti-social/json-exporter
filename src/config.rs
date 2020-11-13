@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Error as AnyhowError};
 
-use fehler::throws;
+use fehler::{throw, throws};
 
 use jsonpath::{Selector, Found, Step};
 
@@ -19,6 +19,7 @@ use crate::tmpl::{
     Placeholder,
     Var,
 };
+use crate::filters::{self, Filter as PreparedFilter};
 
 
 type TemplateProcessor = Box<dyn Fn(&Found) -> Option<String>>;
@@ -63,6 +64,8 @@ pub struct Metric {
     name: Option<String>,
     #[serde(rename = "type", default)]
     metric_type: Option<MetricType>,
+    #[serde(default)]
+    modifiers: Vec<Filter>,
     #[serde(default)]
     labels: Vec<Label>,
     #[serde(default)]
@@ -130,6 +133,24 @@ pub enum MetricType {
 }
 
 #[derive(Deserialize)]
+struct Filter {
+    name: String,
+    args: serde_yaml::Value,
+}
+
+impl Filter {
+    #[throws(AnyhowError)]
+    fn prepare(&self) -> Box<dyn PreparedFilter> {
+        let create_filter = match self.name.as_str() {
+            "mul" | "multiply" => filters::Multiply::create,
+            "div" | "divide" => filters::Divide::create,
+            _ => throw!(anyhow!("Unknown filter: {}", &self.name)),
+        };
+        create_filter(&self.args)?
+    }
+}
+
+#[derive(Deserialize)]
 pub struct Label {
     name: String,
     value: String,
@@ -160,6 +181,7 @@ pub struct PreparedMetric {
     pub metric_type: Option<MetricType>,
     pub name: Option<String>,
     pub name_processor: Option<TemplateProcessor>,
+    pub filters: Vec<Box<dyn PreparedFilter>>,
     pub labels: Vec<PreparedLabel>,
     pub metrics: Vec<PreparedMetric>
 }
@@ -176,6 +198,12 @@ impl PreparedMetric {
         let name_processor = metric.name.as_ref().map(|n| make_value_processor(n))
             .transpose()?;
         let selector = JsonSelector::new(&metric.path)?;
+
+        let mut prepared_filters = vec!();
+        for filter in &metric.modifiers {
+            prepared_filters.push(filter.prepare()?);
+        }
+
         let mut prepared_labels = vec!();
         for label in &metric.labels {
             prepared_labels.push(PreparedLabel::from_label(label)?);
@@ -185,6 +213,7 @@ impl PreparedMetric {
             name,
             name_processor,
             selector,
+            filters: prepared_filters,
             labels: prepared_labels,
             metrics: PreparedMetrics::from_metrics(&metric.metrics, metric_type)?,
         }
@@ -196,9 +225,6 @@ pub struct JsonSelector {
     selector: Selector,
 }
 
-trait Captures<'a> { }
-impl<'a, T: ?Sized> Captures<'a> for T { }
-
 impl JsonSelector {
     #[throws(AnyhowError)]
     fn new(expression: &str) -> Self {
@@ -209,8 +235,8 @@ impl JsonSelector {
         };
         let selector = Selector::new(&expression)
             .map_err(|e| anyhow!(
-            "Error when creating json selector [{}]: {}", expression, e
-        ))?;
+                "Error when creating json selector [{}]: {}", expression, e
+            ))?;
 
         Self {
             expression,
