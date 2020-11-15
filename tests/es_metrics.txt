@@ -1,0 +1,639 @@
+# TYPE elasticsearch_number_of_nodes gauge
+elasticsearch_number_of_nodes{cluster="catalog"} 3
+# TYPE elasticsearch_number_of_data_nodes gauge
+elasticsearch_number_of_data_nodes{cluster="catalog"} 3
+# TYPE elasticsearch_active_primary_shards gauge
+elasticsearch_active_primary_shards{cluster="catalog"} 680
+# TYPE elasticsearch_active_shards gauge
+elasticsearch_active_shards{cluster="catalog"} 1023
+# TYPE elasticsearch_relocating_shards gauge
+elasticsearch_relocating_shards{cluster="catalog"} 0
+# TYPE elasticsearch_initializing_shards gauge
+elasticsearch_initializing_shards{cluster="catalog"} 0
+# TYPE elasticsearch_unassigned_shards gauge
+elasticsearch_unassigned_shards{cluster="catalog"} 0
+# TYPE elasticsearch_delayed_unassigned_shards gauge
+elasticsearch_delayed_unassigned_shards{cluster="catalog"} 0
+# TYPE elasticsearch_number_of_pending_tasks gauge
+elasticsearch_number_of_pending_tasks{cluster="catalog"} 0
+# TYPE elasticsearch_number_of_in_flight_fetch gauge
+elasticsearch_number_of_in_flight_fetch{cluster="catalog"} 0
+# TYPE elasticsearch_task_max_waiting_in_queue_millis gauge
+elasticsearch_task_max_waiting_in_queue_millis{cluster="catalog"} 0
+
+
+# TYPE elasticsearch_os_cpu_percent gauge
+elasticsearch_os_cpu_percent{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 24
+# TYPE elasticsearch_os_load1 gauge
+elasticsearch_os_load1{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1.78
+# TYPE elasticsearch_os_load5 gauge
+elasticsearch_os_load5{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1.85
+# TYPE elasticsearch_os_load15 gauge
+elasticsearch_os_load15{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 2
+# TYPE elasticsearch_os_mem_free_bytes gauge
+elasticsearch_os_mem_free_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 241324032
+# TYPE elasticsearch_os_mem_used_bytes gauge
+elasticsearch_os_mem_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 16524816384
+# TYPE elasticsearch_os_mem_total_bytes gauge
+elasticsearch_os_mem_total_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 16766140416
+# TYPE elasticsearch_indices_fielddata_memory_size_bytes gauge
+elasticsearch_indices_fielddata_memory_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_fielddata_evictions gauge
+elasticsearch_indices_fielddata_evictions{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_completion_size_bytes gauge
+elasticsearch_indices_completion_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_query_cache_memory_size_bytes gauge
+elasticsearch_indices_query_cache_memory_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 867904985
+# TYPE elasticsearch_indices_query_cache_evictions gauge
+elasticsearch_indices_query_cache_evictions{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 67239154
+# TYPE elasticsearch_indices_query_cache_total gauge
+elasticsearch_indices_query_cache_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 16303498772
+# TYPE elasticsearch_indices_query_cache_cache_size gauge
+elasticsearch_indices_query_cache_cache_size{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 36139
+# TYPE elasticsearch_indices_query_cache_cache_total gauge
+elasticsearch_indices_query_cache_cache_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 67275293
+# TYPE elasticsearch_indices_query_cache_count gauge
+elasticsearch_indices_query_cache_count{cache="hit",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 6666806465
+# TYPE elasticsearch_indices_query_miss_count gauge
+elasticsearch_indices_query_miss_count{cache="miss",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 9636692307
+# TYPE elasticsearch_indices_request_cache_memory_size_bytes gauge
+elasticsearch_indices_request_cache_memory_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 52986785
+# TYPE elasticsearch_indices_request_cache_evictions gauge
+elasticsearch_indices_request_cache_evictions{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 114803778
+# TYPE elasticsearch_indices_request_cache_count gauge
+elasticsearch_indices_request_cache_count{cache="hit",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 11650541
+# TYPE elasticsearch_indices_request_miss_count gauge
+elasticsearch_indices_request_miss_count{cache="miss",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 114835573
+# TYPE elasticsearch_indices_translog_operations gauge
+elasticsearch_indices_translog_operations{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 17933
+# TYPE elasticsearch_indices_translog_size_in_bytes gauge
+elasticsearch_indices_translog_size_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 102230778
+# TYPE elasticsearch_indices_get_time_seconds gauge
+elasticsearch_indices_get_time_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_get_total gauge
+elasticsearch_indices_get_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_get_missing_time_seconds gauge
+elasticsearch_indices_get_missing_time_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_get_missing_total gauge
+elasticsearch_indices_get_missing_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_get_exists_time_seconds gauge
+elasticsearch_indices_get_exists_time_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_get_exists_total gauge
+elasticsearch_indices_get_exists_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_refresh_time_seconds_total gauge
+elasticsearch_indices_refresh_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 33583.408
+# TYPE elasticsearch_indices_refresh_total gauge
+elasticsearch_indices_refresh_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1793779
+# TYPE elasticsearch_indices_search_open_contexts gauge
+elasticsearch_indices_search_open_contexts{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_search_query_time_seconds gauge
+elasticsearch_indices_search_query_time_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 6902180.26
+# TYPE elasticsearch_indices_search_query_total gauge
+elasticsearch_indices_search_query_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 2126037334
+# TYPE elasticsearch_indices_search_fetch_time_seconds gauge
+elasticsearch_indices_search_fetch_time_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 17748.803
+# TYPE elasticsearch_indices_search_fetch_total gauge
+elasticsearch_indices_search_fetch_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 226029316
+# TYPE elasticsearch_indices_search_suggest_time_seconds gauge
+elasticsearch_indices_search_suggest_time_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_search_suggest_total gauge
+elasticsearch_indices_search_suggest_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_search_scroll_time_seconds gauge
+elasticsearch_indices_search_scroll_time_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 301.286
+# TYPE elasticsearch_indices_search_scroll_total gauge
+elasticsearch_indices_search_scroll_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 148
+# TYPE elasticsearch_indices_docs gauge
+elasticsearch_indices_docs{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 31616105
+# TYPE elasticsearch_indices_docs_deleted gauge
+elasticsearch_indices_docs_deleted{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_store_size_bytes gauge
+elasticsearch_indices_store_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19974077389
+# TYPE elasticsearch_indices_segments_memory_bytes gauge
+elasticsearch_indices_segments_memory_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19236050
+# TYPE elasticsearch_indices_segments_count gauge
+elasticsearch_indices_segments_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 12
+# TYPE elasticsearch_indices_segments_terms_memory_in_bytes gauge
+elasticsearch_indices_segments_terms_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 16668171
+# TYPE elasticsearch_indices_segments_index_writer_memory_in_bytes gauge
+elasticsearch_indices_segments_index_writer_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_segments_norms_memory_in_bytes gauge
+elasticsearch_indices_segments_norms_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 768
+# TYPE elasticsearch_indices_segments_stored_fields_memory_in_bytes gauge
+elasticsearch_indices_segments_stored_fields_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 575560
+# TYPE elasticsearch_indices_segments_doc_values_memory_in_bytes gauge
+elasticsearch_indices_segments_doc_values_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 102952
+# TYPE elasticsearch_indices_segments_fixed_bit_set_memory_in_bytes gauge
+elasticsearch_indices_segments_fixed_bit_set_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 2652872
+# TYPE elasticsearch_indices_segments_term_vectors_memory_in_bytes gauge
+elasticsearch_indices_segments_term_vectors_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_segments_points_memory_in_bytes gauge
+elasticsearch_indices_segments_points_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1888599
+# TYPE elasticsearch_indices_segments_version_map_memory_in_bytes gauge
+elasticsearch_indices_segments_version_map_memory_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_flush_total gauge
+elasticsearch_indices_flush_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 3063
+# TYPE elasticsearch_indices_flush_time_seconds gauge
+elasticsearch_indices_flush_time_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 2919.966
+# TYPE elasticsearch_indices_warmer_total gauge
+elasticsearch_indices_warmer_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 12550
+# TYPE elasticsearch_indices_warmer_time_seconds_total gauge
+elasticsearch_indices_warmer_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 60.999
+# TYPE elasticsearch_indices_indexing_index_time_seconds_total gauge
+elasticsearch_indices_indexing_index_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 286396.431
+# TYPE elasticsearch_indices_indexing_index_total gauge
+elasticsearch_indices_indexing_index_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 219016032
+# TYPE elasticsearch_indices_indexing_delete_time_seconds_total gauge
+elasticsearch_indices_indexing_delete_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 647.907
+# TYPE elasticsearch_indices_indexing_delete_total gauge
+elasticsearch_indices_indexing_delete_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 22423421
+# TYPE elasticsearch_indices_indexing_is_throttled gauge
+elasticsearch_indices_indexing_is_throttled{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_indexing_throttle_time_seconds_total gauge
+elasticsearch_indices_indexing_throttle_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_merges_total gauge
+elasticsearch_indices_merges_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 193725
+# TYPE elasticsearch_indices_merges_current gauge
+elasticsearch_indices_merges_current{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_merges_current_size_in_bytes gauge
+elasticsearch_indices_merges_current_size_in_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_indices_merges_docs_total gauge
+elasticsearch_indices_merges_docs_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 3154926847
+# TYPE elasticsearch_indices_merges_total_size_bytes_total gauge
+elasticsearch_indices_merges_total_size_bytes_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1576758909063
+# TYPE elasticsearch_indices_merges_total_time_seconds_total gauge
+elasticsearch_indices_merges_total_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 116745.416
+# TYPE elasticsearch_indices_merges_total_throttled_time_seconds_total gauge
+elasticsearch_indices_merges_total_throttled_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 61434.353
+# TYPE elasticsearch_jvm_memory_used_bytes gauge
+elasticsearch_jvm_memory_used_bytes{area="heap",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 3021086472
+# TYPE elasticsearch_jvm_memory_max_bytes gauge
+elasticsearch_jvm_memory_max_bytes{area="heap",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 5298978816
+# TYPE elasticsearch_jvm_memory_committed_bytes gauge
+elasticsearch_jvm_memory_committed_bytes{area="heap",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 5298978816
+elasticsearch_jvm_memory_used_bytes{area="non-heap",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 185232352
+elasticsearch_jvm_memory_committed_bytes{area="non-heap",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 198868992
+# TYPE elasticsearch_jvm_memory_pool_used_bytes gauge
+elasticsearch_jvm_memory_pool_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="old"} 2927550640
+elasticsearch_jvm_memory_pool_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="survivor"} 8585568
+elasticsearch_jvm_memory_pool_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="young"} 84950264
+# TYPE elasticsearch_jvm_memory_pool_max_bytes gauge
+elasticsearch_jvm_memory_pool_max_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="old"} 4670816256
+elasticsearch_jvm_memory_pool_max_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="survivor"} 69730304
+elasticsearch_jvm_memory_pool_max_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="young"} 558432256
+# TYPE elasticsearch_jvm_memory_pool_peak_used_bytes gauge
+elasticsearch_jvm_memory_pool_peak_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="old"} 4344275736
+elasticsearch_jvm_memory_pool_peak_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="survivor"} 69730304
+elasticsearch_jvm_memory_pool_peak_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="young"} 558432256
+# TYPE elasticsearch_jvm_memory_pool_peak_max_bytes gauge
+elasticsearch_jvm_memory_pool_peak_max_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="old"} 4670816256
+elasticsearch_jvm_memory_pool_peak_max_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="survivor"} 69730304
+elasticsearch_jvm_memory_pool_peak_max_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",pool="young"} 558432256
+# TYPE elasticsearch_jvm_buffer_pool_used_bytes gauge
+elasticsearch_jvm_buffer_pool_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="direct"} 152378262
+elasticsearch_jvm_buffer_pool_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="mapped"} 20175807954
+# TYPE elasticsearch_jvm_gc_collection_seconds_count gauge
+elasticsearch_jvm_gc_collection_seconds_count{cluster="catalog",gc="old",host="10.10.232.4",name="es-catalog-2"} 8289
+elasticsearch_jvm_gc_collection_seconds_count{cluster="catalog",gc="young",host="10.10.232.4",name="es-catalog-2"} 9734008
+# TYPE elasticsearch_jvm_gc_collection_seconds_sum gauge
+elasticsearch_jvm_gc_collection_seconds_sum{cluster="catalog",gc="old",host="10.10.232.4",name="es-catalog-2"} 401.596
+elasticsearch_jvm_gc_collection_seconds_sum{cluster="catalog",gc="young",host="10.10.232.4",name="es-catalog-2"} 94031.825
+# TYPE elasticsearch_process_cpu_percent gauge
+elasticsearch_process_cpu_percent{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19
+# TYPE elasticsearch_process_cpu_cpu_time_seconds_sum gauge
+elasticsearch_process_cpu_cpu_time_seconds_sum{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="total"} 9903994.22
+# TYPE elasticsearch_process_mem_virtual_size_bytes gauge
+elasticsearch_process_mem_virtual_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 31678554112
+# TYPE elasticsearch_process_open_files_count gauge
+elasticsearch_process_open_files_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1411
+# TYPE elasticsearch_process_max_files_descriptors gauge
+elasticsearch_process_max_files_descriptors{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1048576
+# TYPE elasticsearch_transport_rx_packets_total gauge
+elasticsearch_transport_rx_packets_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 8780075317
+# TYPE elasticsearch_transport_rx_size_bytes_total gauge
+elasticsearch_transport_rx_size_bytes_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 13992248661669
+# TYPE elasticsearch_transport_tx_packets_total gauge
+elasticsearch_transport_tx_packets_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 8780076123
+# TYPE elasticsearch_transport_tx_size_bytes_total gauge
+elasticsearch_transport_tx_size_bytes_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 13857199795729
+# TYPE elasticsearch_breakers_estimated_size_bytes gauge
+elasticsearch_breakers_estimated_size_bytes{breaker="accounting",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19236050
+elasticsearch_breakers_estimated_size_bytes{breaker="fielddata",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+elasticsearch_breakers_estimated_size_bytes{breaker="in_flight_requests",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+elasticsearch_breakers_estimated_size_bytes{breaker="parent",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19236050
+elasticsearch_breakers_estimated_size_bytes{breaker="request",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_breakers_limit_size_bytes gauge
+elasticsearch_breakers_limit_size_bytes{breaker="accounting",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 5298978816
+elasticsearch_breakers_limit_size_bytes{breaker="fielddata",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 3179387289
+elasticsearch_breakers_limit_size_bytes{breaker="in_flight_requests",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 5298978816
+elasticsearch_breakers_limit_size_bytes{breaker="parent",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 3709285171
+elasticsearch_breakers_limit_size_bytes{breaker="request",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 3179387289
+# TYPE elasticsearch_breakers_tripped gauge
+elasticsearch_breakers_tripped{breaker="accounting",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+elasticsearch_breakers_tripped{breaker="fielddata",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+elasticsearch_breakers_tripped{breaker="in_flight_requests",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+elasticsearch_breakers_tripped{breaker="parent",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+elasticsearch_breakers_tripped{breaker="request",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_breakers_overhead gauge
+elasticsearch_breakers_overhead{breaker="accounting",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1
+elasticsearch_breakers_overhead{breaker="fielddata",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1.03
+elasticsearch_breakers_overhead{breaker="in_flight_requests",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1
+elasticsearch_breakers_overhead{breaker="parent",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1
+elasticsearch_breakers_overhead{breaker="request",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 1
+# TYPE elasticsearch_thread_pool_active_count gauge
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="analyze"} 0
+# TYPE elasticsearch_thread_pool_completed_count gauge
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="analyze"} 0
+# TYPE elasticsearch_thread_pool_largest_count gauge
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="analyze"} 0
+# TYPE elasticsearch_thread_pool_queue_count gauge
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="analyze"} 0
+# TYPE elasticsearch_thread_pool_rejected_count gauge
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="analyze"} 0
+# TYPE elasticsearch_thread_pool_threads_count gauge
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="analyze"} 0
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_started"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_started"} 127
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_started"} 6
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_started"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_started"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_started"} 1
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_store"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_store"} 1745
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_store"} 8
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_store"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_store"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="fetch_shard_store"} 1
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="flush"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="flush"} 3724536
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="flush"} 2
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="flush"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="flush"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="flush"} 2
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="force_merge"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="force_merge"} 46
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="force_merge"} 1
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="force_merge"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="force_merge"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="force_merge"} 1
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="generic"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="generic"} 8069230
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="generic"} 70
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="generic"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="generic"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="generic"} 15
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="get"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="get"} 0
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="get"} 0
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="get"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="get"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="get"} 0
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="index"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="index"} 0
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="index"} 0
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="index"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="index"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="index"} 0
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="listener"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="listener"} 0
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="listener"} 0
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="listener"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="listener"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="listener"} 0
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="management"} 1
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="management"} 32836829
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="management"} 5
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="management"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="management"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="management"} 5
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="refresh"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="refresh"} 4576706
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="refresh"} 2
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="refresh"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="refresh"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="refresh"} 1
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search"} 3461025924
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search"} 9
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search"} 126567
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search"} 9
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search_throttled"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search_throttled"} 0
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search_throttled"} 0
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search_throttled"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search_throttled"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="search_throttled"} 0
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="snapshot"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="snapshot"} 0
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="snapshot"} 0
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="snapshot"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="snapshot"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="snapshot"} 0
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="warmer"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="warmer"} 41606369
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="warmer"} 2
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="warmer"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="warmer"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="warmer"} 1
+elasticsearch_thread_pool_active_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="write"} 0
+elasticsearch_thread_pool_completed_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="write"} 41675258
+elasticsearch_thread_pool_largest_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="write"} 1
+elasticsearch_thread_pool_queue_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="write"} 0
+elasticsearch_thread_pool_rejected_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="write"} 0
+elasticsearch_thread_pool_threads_count{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="write"} 1
+# TYPE elasticsearch_filesystem_data_available_bytes gauge
+elasticsearch_filesystem_data_available_bytes{cluster="catalog",host="10.10.232.4",mount="/var/lib/elasticsearch (/dev/sda1)",name="es-catalog-2",path="/var/lib/elasticsearch/data/nodes/0"} 187960139776
+# TYPE elasticsearch_filesystem_data_free_bytes gauge
+elasticsearch_filesystem_data_free_bytes{cluster="catalog",host="10.10.232.4",mount="/var/lib/elasticsearch (/dev/sda1)",name="es-catalog-2",path="/var/lib/elasticsearch/data/nodes/0"} 187976916992
+# TYPE elasticsearch_filesystem_data_size_bytes gauge
+elasticsearch_filesystem_data_size_bytes{cluster="catalog",host="10.10.232.4",mount="/var/lib/elasticsearch (/dev/sda1)",name="es-catalog-2",path="/var/lib/elasticsearch/data/nodes/0"} 233197473792
+# TYPE elasticsearch_filesystem_io_stats_device_operations_count gauge
+elasticsearch_filesystem_io_stats_device_operations_count{cluster="catalog",device="0",host="10.10.232.4",name="es-catalog-2"} 594946310
+# TYPE elasticsearch_filesystem_io_stats_device_read_operations_count gauge
+elasticsearch_filesystem_io_stats_device_read_operations_count{cluster="catalog",device="0",host="10.10.232.4",name="es-catalog-2"} 17023633
+# TYPE elasticsearch_filesystem_io_stats_device_write_operations_count gauge
+elasticsearch_filesystem_io_stats_device_write_operations_count{cluster="catalog",device="0",host="10.10.232.4",name="es-catalog-2"} 577922677
+# TYPE elasticsearch_filesystem_io_stats_device_read_size_kilobytes_sum gauge
+elasticsearch_filesystem_io_stats_device_read_size_kilobytes_sum{cluster="catalog",device="0",host="10.10.232.4",name="es-catalog-2"} 1113949836
+# TYPE elasticsearch_filesystem_io_stats_device_write_size_kilobytes_sum gauge
+elasticsearch_filesystem_io_stats_device_write_size_kilobytes_sum{cluster="catalog",device="0",host="10.10.232.4",name="es-catalog-2"} 20300368780
+
+
+# TYPE elasticsearch_indices_docs_primary gauge
+elasticsearch_indices_docs_primary{cluster="catalog",index="catalog_test"} 109186866
+elasticsearch_indices_docs_primary{cluster="catalog",index="catalog_v1"} 450361051
+elasticsearch_indices_docs_primary{cluster="catalog",index="catalog_v2"} 109865079
+# TYPE elasticsearch_indices_deleted_docs_primary gauge
+elasticsearch_indices_deleted_docs_primary{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_deleted_docs_primary{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_deleted_docs_primary{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_store_size_bytes_primary gauge
+elasticsearch_indices_store_size_bytes_primary{cluster="catalog",index="catalog_test"} 129322603190
+elasticsearch_indices_store_size_bytes_primary{cluster="catalog",index="catalog_v1"} 156349611077
+elasticsearch_indices_store_size_bytes_primary{cluster="catalog",index="catalog_v2"} 136075318386
+# TYPE elasticsearch_indices_segment_count_primary gauge
+elasticsearch_indices_segment_count_primary{cluster="catalog",index="catalog_test"} 80
+elasticsearch_indices_segment_count_primary{cluster="catalog",index="catalog_v1"} 80
+elasticsearch_indices_segment_count_primary{cluster="catalog",index="catalog_v2"} 80
+# TYPE elasticsearch_indices_segment_memory_bytes_primary gauge
+elasticsearch_indices_segment_memory_bytes_primary{cluster="catalog",index="catalog_test"} 127881059
+elasticsearch_indices_segment_memory_bytes_primary{cluster="catalog",index="catalog_v1"} 140816620
+elasticsearch_indices_segment_memory_bytes_primary{cluster="catalog",index="catalog_v2"} 131620134
+# TYPE elasticsearch_indices_segment_terms_memory_primary gauge
+elasticsearch_indices_segment_terms_memory_primary{cluster="catalog",index="catalog_test"} 113958844
+elasticsearch_indices_segment_terms_memory_primary{cluster="catalog",index="catalog_v1"} 115290855
+elasticsearch_indices_segment_terms_memory_primary{cluster="catalog",index="catalog_v2"} 117194202
+# TYPE elasticsearch_indices_segment_fields_memory_bytes_primary gauge
+elasticsearch_indices_segment_fields_memory_bytes_primary{cluster="catalog",index="catalog_test"} 2036376
+elasticsearch_indices_segment_fields_memory_bytes_primary{cluster="catalog",index="catalog_v1"} 8103168
+elasticsearch_indices_segment_fields_memory_bytes_primary{cluster="catalog",index="catalog_v2"} 2064696
+# TYPE elasticsearch_indices_segment_term_vectors_memory_primary_bytes gauge
+elasticsearch_indices_segment_term_vectors_memory_primary_bytes{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_segment_term_vectors_memory_primary_bytes{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_segment_term_vectors_memory_primary_bytes{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_segment_norms_memory_bytes_primary gauge
+elasticsearch_indices_segment_norms_memory_bytes_primary{cluster="catalog",index="catalog_test"} 5120
+elasticsearch_indices_segment_norms_memory_bytes_primary{cluster="catalog",index="catalog_v1"} 5120
+elasticsearch_indices_segment_norms_memory_bytes_primary{cluster="catalog",index="catalog_v2"} 5120
+# TYPE elasticsearch_indices_segment_points_memory_bytes_primary gauge
+elasticsearch_indices_segment_points_memory_bytes_primary{cluster="catalog",index="catalog_test"} 11252647
+elasticsearch_indices_segment_points_memory_bytes_primary{cluster="catalog",index="catalog_v1"} 16576093
+elasticsearch_indices_segment_points_memory_bytes_primary{cluster="catalog",index="catalog_v2"} 11791236
+# TYPE elasticsearch_indices_segment_doc_values_memory_bytes_primary gauge
+elasticsearch_indices_segment_doc_values_memory_bytes_primary{cluster="catalog",index="catalog_test"} 628072
+elasticsearch_indices_segment_doc_values_memory_bytes_primary{cluster="catalog",index="catalog_v1"} 841384
+elasticsearch_indices_segment_doc_values_memory_bytes_primary{cluster="catalog",index="catalog_v2"} 564880
+# TYPE elasticsearch_indices_segment_index_writer_memory_bytes_primary gauge
+elasticsearch_indices_segment_index_writer_memory_bytes_primary{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_segment_index_writer_memory_bytes_primary{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_segment_index_writer_memory_bytes_primary{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_segment_version_map_memory_bytes_primary gauge
+elasticsearch_indices_segment_version_map_memory_bytes_primary{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_segment_version_map_memory_bytes_primary{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_segment_version_map_memory_bytes_primary{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_completion_bytes_primary gauge
+elasticsearch_indices_completion_bytes_primary{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_completion_bytes_primary{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_completion_bytes_primary{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_docs_total gauge
+elasticsearch_indices_docs_total{cluster="catalog",index="catalog_test"} 218373732
+elasticsearch_indices_docs_total{cluster="catalog",index="catalog_v1"} 900722102
+elasticsearch_indices_docs_total{cluster="catalog",index="catalog_v2"} 219730158
+# TYPE elasticsearch_indices_deleted_docs_total gauge
+elasticsearch_indices_deleted_docs_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_deleted_docs_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_deleted_docs_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_store_size_bytes_total gauge
+elasticsearch_indices_store_size_bytes_total{cluster="catalog",index="catalog_test"} 258645204130
+elasticsearch_indices_store_size_bytes_total{cluster="catalog",index="catalog_v1"} 312833754423
+elasticsearch_indices_store_size_bytes_total{cluster="catalog",index="catalog_v2"} 272150565516
+# TYPE elasticsearch_indices_segment_count_total gauge
+elasticsearch_indices_segment_count_total{cluster="catalog",index="catalog_test"} 160
+elasticsearch_indices_segment_count_total{cluster="catalog",index="catalog_v1"} 160
+elasticsearch_indices_segment_count_total{cluster="catalog",index="catalog_v2"} 160
+# TYPE elasticsearch_indices_segment_memory_bytes_total gauge
+elasticsearch_indices_segment_memory_bytes_total{cluster="catalog",index="catalog_test"} 255762118
+elasticsearch_indices_segment_memory_bytes_total{cluster="catalog",index="catalog_v1"} 281642022
+elasticsearch_indices_segment_memory_bytes_total{cluster="catalog",index="catalog_v2"} 263240349
+# TYPE elasticsearch_indices_segment_terms_memory_total gauge
+elasticsearch_indices_segment_terms_memory_total{cluster="catalog",index="catalog_test"} 227917688
+elasticsearch_indices_segment_terms_memory_total{cluster="catalog",index="catalog_v1"} 230581711
+elasticsearch_indices_segment_terms_memory_total{cluster="catalog",index="catalog_v2"} 234388404
+# TYPE elasticsearch_indices_segment_fields_memory_bytes_total gauge
+elasticsearch_indices_segment_fields_memory_bytes_total{cluster="catalog",index="catalog_test"} 4072752
+elasticsearch_indices_segment_fields_memory_bytes_total{cluster="catalog",index="catalog_v1"} 16208104
+elasticsearch_indices_segment_fields_memory_bytes_total{cluster="catalog",index="catalog_v2"} 4129472
+# TYPE elasticsearch_indices_segment_term_vectors_memory_total_bytes gauge
+elasticsearch_indices_segment_term_vectors_memory_total_bytes{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_segment_term_vectors_memory_total_bytes{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_segment_term_vectors_memory_total_bytes{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_segment_norms_memory_bytes_total gauge
+elasticsearch_indices_segment_norms_memory_bytes_total{cluster="catalog",index="catalog_test"} 10240
+elasticsearch_indices_segment_norms_memory_bytes_total{cluster="catalog",index="catalog_v1"} 10240
+elasticsearch_indices_segment_norms_memory_bytes_total{cluster="catalog",index="catalog_v2"} 10240
+# TYPE elasticsearch_indices_segment_points_memory_bytes_total gauge
+elasticsearch_indices_segment_points_memory_bytes_total{cluster="catalog",index="catalog_test"} 22505294
+elasticsearch_indices_segment_points_memory_bytes_total{cluster="catalog",index="catalog_v1"} 33159199
+elasticsearch_indices_segment_points_memory_bytes_total{cluster="catalog",index="catalog_v2"} 23582473
+# TYPE elasticsearch_indices_segment_doc_values_memory_bytes_total gauge
+elasticsearch_indices_segment_doc_values_memory_bytes_total{cluster="catalog",index="catalog_test"} 1256144
+elasticsearch_indices_segment_doc_values_memory_bytes_total{cluster="catalog",index="catalog_v1"} 1682768
+elasticsearch_indices_segment_doc_values_memory_bytes_total{cluster="catalog",index="catalog_v2"} 1129760
+# TYPE elasticsearch_indices_segment_index_writer_memory_bytes_total gauge
+elasticsearch_indices_segment_index_writer_memory_bytes_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_segment_index_writer_memory_bytes_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_segment_index_writer_memory_bytes_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_segment_version_map_memory_bytes_total gauge
+elasticsearch_indices_segment_version_map_memory_bytes_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_segment_version_map_memory_bytes_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_segment_version_map_memory_bytes_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_completion_bytes_total gauge
+elasticsearch_indices_completion_bytes_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_completion_bytes_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_completion_bytes_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_search_open_contexts gauge
+elasticsearch_indices_index_stats_search_open_contexts{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_search_open_contexts{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_search_open_contexts{cluster="catalog",index="catalog_v2"} 49
+# TYPE elasticsearch_indices_index_stats_search_query_time_seconds_total gauge
+elasticsearch_indices_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_test"} 63107.993
+elasticsearch_indices_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_v1"} 89582317.363
+elasticsearch_indices_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_v2"} 17010909.697
+# TYPE elasticsearch_indices_index_stats_search_query_total gauge
+elasticsearch_indices_index_stats_search_query_total{cluster="catalog",index="catalog_test"} 17745399
+elasticsearch_indices_index_stats_search_query_total{cluster="catalog",index="catalog_v1"} 20467343081
+elasticsearch_indices_index_stats_search_query_total{cluster="catalog",index="catalog_v2"} 5211713822
+# TYPE elasticsearch_indices_index_stats_search_fetch_time_seconds_total gauge
+elasticsearch_indices_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_test"} 438.79200000000003
+elasticsearch_indices_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_v1"} 181407.763
+elasticsearch_indices_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_v2"} 38777.794
+# TYPE elasticsearch_indices_index_stats_search_fetch_total gauge
+elasticsearch_indices_index_stats_search_fetch_total{cluster="catalog",index="catalog_test"} 1757059
+elasticsearch_indices_index_stats_search_fetch_total{cluster="catalog",index="catalog_v1"} 2145797522
+elasticsearch_indices_index_stats_search_fetch_total{cluster="catalog",index="catalog_v2"} 497998684
+# TYPE elasticsearch_indices_index_stats_search_scroll_time_seconds_total gauge
+elasticsearch_indices_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_v1"} 4013.58
+elasticsearch_indices_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_v2"} 1002.2180000000001
+# TYPE elasticsearch_indices_index_stats_search_scroll_current gauge
+elasticsearch_indices_index_stats_search_scroll_current{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_search_scroll_current{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_search_scroll_current{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_search_scroll_total gauge
+elasticsearch_indices_index_stats_search_scroll_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_search_scroll_total{cluster="catalog",index="catalog_v1"} 1912
+elasticsearch_indices_index_stats_search_scroll_total{cluster="catalog",index="catalog_v2"} 392
+# TYPE elasticsearch_indices_index_stats_search_suggest_time_seconds_total gauge
+elasticsearch_indices_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_search_suggest_total gauge
+elasticsearch_indices_index_stats_search_suggest_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_search_suggest_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_search_suggest_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_indexing_index_time_seconds_total gauge
+elasticsearch_indices_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_test"} 355969.842
+elasticsearch_indices_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_v1"} 959507.926
+elasticsearch_indices_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_v2"} 4143559.279
+# TYPE elasticsearch_indices_index_stats_indexing_index_total gauge
+elasticsearch_indices_index_stats_indexing_index_total{cluster="catalog",index="catalog_test"} 261853401
+elasticsearch_indices_index_stats_indexing_index_total{cluster="catalog",index="catalog_v1"} 713388817
+elasticsearch_indices_index_stats_indexing_index_total{cluster="catalog",index="catalog_v2"} 2663861982
+# TYPE elasticsearch_indices_index_stats_indexing_delete_time_seconds_total gauge
+elasticsearch_indices_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_test"} 677.155
+elasticsearch_indices_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_v1"} 1715.895
+elasticsearch_indices_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_v2"} 10929.708
+# TYPE elasticsearch_indices_index_stats_indexing_delete_total gauge
+elasticsearch_indices_index_stats_indexing_delete_total{cluster="catalog",index="catalog_test"} 23682110
+elasticsearch_indices_index_stats_indexing_delete_total{cluster="catalog",index="catalog_v1"} 74590468
+elasticsearch_indices_index_stats_indexing_delete_total{cluster="catalog",index="catalog_v2"} 298265132
+# TYPE elasticsearch_indices_index_stats_indexing_noop_update_total gauge
+elasticsearch_indices_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_indexing_throttle_time_seconds_total gauge
+elasticsearch_indices_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_get_time_seconds_total gauge
+elasticsearch_indices_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_get_total gauge
+elasticsearch_indices_index_stats_get_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_get_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_get_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_merge_time_seconds_total gauge
+elasticsearch_indices_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_test"} 81599.77500000001
+elasticsearch_indices_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_v1"} 170505.041
+elasticsearch_indices_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_v2"} 1260023.06
+# TYPE elasticsearch_indices_index_stats_merge_total gauge
+elasticsearch_indices_index_stats_merge_total{cluster="catalog",index="catalog_test"} 4330
+elasticsearch_indices_index_stats_merge_total{cluster="catalog",index="catalog_v1"} 3196
+elasticsearch_indices_index_stats_merge_total{cluster="catalog",index="catalog_v2"} 50969
+# TYPE elasticsearch_indices_index_stats_merge_throttle_time_seconds_total gauge
+elasticsearch_indices_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_test"} 49896.647000000004
+elasticsearch_indices_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_v1"} 47473.244
+elasticsearch_indices_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_v2"} 865327.493
+# TYPE elasticsearch_indices_index_stats_merge_stopped_time_seconds_total gauge
+elasticsearch_indices_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_merge_merge_auto_throttle_bytes_total gauge
+elasticsearch_indices_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_test"} 2191523840
+elasticsearch_indices_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_v1"} 1035502314
+elasticsearch_indices_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_v2"} 952583633
+# TYPE elasticsearch_indices_index_stats_refresh_time_seconds_total gauge
+elasticsearch_indices_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_test"} 30888927
+elasticsearch_indices_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_v1"} 26481589
+elasticsearch_indices_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_v2"} 359277398
+# TYPE elasticsearch_indices_index_stats_refresh_total gauge
+elasticsearch_indices_index_stats_refresh_total{cluster="catalog",index="catalog_test"} 41577
+elasticsearch_indices_index_stats_refresh_total{cluster="catalog",index="catalog_v1"} 33458
+elasticsearch_indices_index_stats_refresh_total{cluster="catalog",index="catalog_v2"} 474791
+# TYPE elasticsearch_indices_index_stats_flush_time_seconds_total gauge
+elasticsearch_indices_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_test"} 6101353
+elasticsearch_indices_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_v1"} 19500548
+elasticsearch_indices_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_v2"} 64637068
+# TYPE elasticsearch_indices_index_stats_flush_total gauge
+elasticsearch_indices_index_stats_flush_total{cluster="catalog",index="catalog_test"} 3663
+elasticsearch_indices_index_stats_flush_total{cluster="catalog",index="catalog_v1"} 8996
+elasticsearch_indices_index_stats_flush_total{cluster="catalog",index="catalog_v2"} 39853
+# TYPE elasticsearch_indices_index_stats_warmer_time_seconds_total gauge
+elasticsearch_indices_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_test"} 250870
+elasticsearch_indices_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_v1"} 127201
+elasticsearch_indices_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_v2"} 2226583
+# TYPE elasticsearch_indices_index_stats_warmer_total gauge
+elasticsearch_indices_index_stats_warmer_total{cluster="catalog",index="catalog_test"} 36976
+elasticsearch_indices_index_stats_warmer_total{cluster="catalog",index="catalog_v1"} 19343
+elasticsearch_indices_index_stats_warmer_total{cluster="catalog",index="catalog_v2"} 427105
+# TYPE elasticsearch_indices_index_stats_query_cache_memory_bytes_total gauge
+elasticsearch_indices_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_test"} 3925348135
+elasticsearch_indices_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_v1"} 7495513026
+elasticsearch_indices_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_v2"} 23225103279
+# TYPE elasticsearch_indices_index_stats_query_cache_cache_size gauge
+elasticsearch_indices_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_test"} 90749
+elasticsearch_indices_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_v1"} 85257
+elasticsearch_indices_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_v2"} 1254112
+# TYPE elasticsearch_indices_index_stats_query_cache_hits_total gauge
+elasticsearch_indices_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_test"} 197822234
+elasticsearch_indices_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_v1"} 216133855645
+elasticsearch_indices_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_v2"} 57939641189
+# TYPE elasticsearch_indices_index_stats_query_cache_misses_total gauge
+elasticsearch_indices_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_test"} 310545325
+elasticsearch_indices_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_v1"} 325848452954
+elasticsearch_indices_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_v2"} 75155740148
+# TYPE elasticsearch_indices_index_stats_query_cache_caches_total gauge
+elasticsearch_indices_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_test"} 1952306
+elasticsearch_indices_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_v1"} 2356901065
+elasticsearch_indices_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_v2"} 464503389
+# TYPE elasticsearch_indices_index_stats_query_cache_evictions_total gauge
+elasticsearch_indices_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_test"} 1861557
+elasticsearch_indices_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_v1"} 2356815808
+elasticsearch_indices_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_v2"} 463249277
+# TYPE elasticsearch_indices_index_stats_request_cache_cache_memory_bytes_total gauge
+elasticsearch_indices_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_v2"} 2119888952
+# TYPE elasticsearch_indices_index_stats_request_cache_hits_total gauge
+elasticsearch_indices_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_test"} 232684
+elasticsearch_indices_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_v1"} 411840454
+elasticsearch_indices_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_v2"} 55309733
+# TYPE elasticsearch_indices_index_stats_request_cache_misses_total gauge
+elasticsearch_indices_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_test"} 4362868
+elasticsearch_indices_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_v1"} 3378096312
+elasticsearch_indices_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_v2"} 1261956319
+# TYPE elasticsearch_indices_index_stats_request_cache_evictions_total gauge
+elasticsearch_indices_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_test"} 4362868
+elasticsearch_indices_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_v1"} 3377159094
+elasticsearch_indices_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_v2"} 1261545289
+# TYPE elasticsearch_indices_index_stats_fielddata_memory_bytes_total gauge
+elasticsearch_indices_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_indices_index_stats_fielddata_evictions_total gauge
+elasticsearch_indices_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_indices_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_indices_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_v2"} 0
+
+

@@ -49,13 +49,16 @@ endpoints:
     # TODO: es_master_node, es_data_node, es_ingest_node labels should be booleans
     # - name: es_master_node
     #   value: ${.roles[?(@ == master)]}
-    #   modifiers: [bool]
+    #   modifiers:
+    #   - name: bool
     # - name: es_data_node
     #   value: ${.roles[?(@ == data)]}
-    #   modifiers: [bool]
+    #   modifiers:
+    #   - name: bool
     # - name: es_ingest_node
     #   value: ${.roles[?(@ == ingest)]}
-    #   modifiers: [bool]
+    #   modifiers:
+    #   - name: bool
     metrics:
     - path: os
       metrics:
@@ -63,20 +66,20 @@ endpoints:
       - path: cpu.load_average
         name: ''
         metrics:
-        - name: load1
-          path: ${.1m}
-        - name: load5
-          path: ${.5m}
-        - name: load15
-          path: ${.15m}
-    - path: mem
-      metrics:
-      - path: free_in_bytes
-        name: free_bytes
-      - path: used_in_bytes
-        name: used_bytes
-      - path: total_in_bytes
-        name: total_bytes
+        - path: 1m
+          name: load1
+        - path: 5m
+          name: load5
+        - path: 15m
+          name: load15
+      - path: mem
+        metrics:
+        - path: free_in_bytes
+          name: free_bytes
+        - path: used_in_bytes
+          name: used_bytes
+        - path: total_in_bytes
+          name: total_bytes
     - path: indices
       metrics:
       - path: fielddata
@@ -223,164 +226,164 @@ endpoints:
         - path: total_throttled_time_in_millis
           name: total_throttled_time_seconds_total
           modifiers: [*ms-to-secs]
-      - path: jvm
+    - path: jvm
+      metrics:
+      - path: mem
+        name: memory
         metrics:
-        - path: mem
-          name: memory
-          metrics:
-          - path: ''
-            labels:
-            - name: area
-              value: heap
-            metrics:
-            - path: heap_used_in_bytes
-              name: used_bytes
-            - path: heap_max_in_bytes
-              name: max_bytes
-            - name: committed_bytes
-              path: heap_committed_in_bytes
-          - path: ''
-            labels:
-            - name: area
-              value: non-heap
-            metrics:
-            - path: non_heap_used_in_bytes
-              name: used_bytes
-            - path: non_heap_committed_in_bytes
-              name: committed_bytes
-          - path: pools.*
-            name: pool
-            labels:
-            - name: pool
-              value: $1
-            metrics:
-            - path: used_in_bytes
-              name: used_bytes
-            - path: max_in_bytes
-              name: max_bytes
-            - path: peak_used_in_bytes
-              name: peak_used_bytes
-            - path: peak_max_in_bytes
-              name: peak_max_bytes
-        - path: buffer_pools.*
-          name: buffer_pool
+        - path: ''
           labels:
-          - name: type
+          - name: area
+            value: heap
+          metrics:
+          - path: heap_used_in_bytes
+            name: used_bytes
+          - path: heap_max_in_bytes
+            name: max_bytes
+          - name: committed_bytes
+            path: heap_committed_in_bytes
+        - path: ''
+          labels:
+          - name: area
+            value: non-heap
+          metrics:
+          - path: non_heap_used_in_bytes
+            name: used_bytes
+          - path: non_heap_committed_in_bytes
+            name: committed_bytes
+        - path: pools.*
+          name: pool
+          labels:
+          - name: pool
             value: $1
           metrics:
           - path: used_in_bytes
             name: used_bytes
-        - path: gc.collectors.*
-          name: gc_collection
-          labels:
-          - name: gc
-            value: $2
-          metrics:
-          - path: collection_count
-            name: seconds_count
-          - path: collection_time_in_millis
-            name: seconds_sum
-            modifiers: [*ms-to-secs]
-      - path: process
-        metrics:
-        - path: cpu
-          # TODO: did not find sys & user cpu time in stats
-          metrics:
-          - percent
-          - path: total_in_millis
-            name: cpu_time_seconds_sum
-            modifiers: [*ms-to-secs]
-            labels:
-            - name: type
-              value: total
-          - path: sys_in_millis
-            name: cpu_time_seconds_sum
-            modifiers: [*ms-to-secs]
-            labels:
-            - name: type
-              value: sys
-          - path: user_in_millis
-            name: cpu_time_seconds_sum
-            modifiers: [*ms-to-secs]
-            labels:
-            - name: type
-              value: user
-        - path: mem
-          # TODO: did not find resident & share memory in stats
-          metrics:
-          - path: total_resident_in_bytes
-            name: resident_size_bytes
-          - path: total_share_in_bytes
-            name: share_size_bytes
-          - path: total_virtual_in_bytes
-            name: virtual_size_bytes
-        - path: open_file_descriptors
-          name: open_files_count
-        - path: max_file_descriptors
-          name: max_files_descriptors
-      - path: transport
-        metrics:
-        - path: rx_count
-          name: rx_packets_total
-        - path: rx_size_in_bytes
-          name: rx_size_bytes_total
-        - path: tx_count
-          name: tx_packets_total
-        - path: tx_size_in_bytes
-          name: tx_size_bytes_total
-      - path: breakers.*
-        name: breakers
-        labels:
-        - name: breaker
-          value: $1
-        metrics:
-        - path: estimated_size_in_bytes
-          name: estimated_size_bytes
-        - path: limit_size_in_bytes
-          name: limit_size_bytes
-        - tripped
-        - overhead
-      - path: thread_pool.*
-        name: thread_pool
+          - path: max_in_bytes
+            name: max_bytes
+          - path: peak_used_in_bytes
+            name: peak_used_bytes
+          - path: peak_max_in_bytes
+            name: peak_max_bytes
+      - path: buffer_pools.*
+        name: buffer_pool
         labels:
         - name: type
           value: $1
         metrics:
-        - path: '*'
-          name: ${0}_count
-      - path: fs
-        name: filesystem
+        - path: used_in_bytes
+          name: used_bytes
+      - path: gc.collectors.*
+        name: gc_collection
+        labels:
+        - name: gc
+          value: $2
         metrics:
-        - path: data.*
-          name: data
+        - path: collection_count
+          name: seconds_count
+        - path: collection_time_in_millis
+          name: seconds_sum
+          modifiers: [*ms-to-secs]
+    - path: process
+      metrics:
+      - path: cpu
+        # TODO: did not find sys & user cpu time in stats
+        metrics:
+        - percent
+        - path: total_in_millis
+          name: cpu_time_seconds_sum
+          modifiers: [*ms-to-secs]
           labels:
-          - name: mount
-            value: ${.mount}
-          - name: path
-            value: ${.path}
-          metrics:
-          - path: available_in_bytes
-            name: available_bytes
-          - path: free_in_bytes
-            name: free_bytes
-          - path: total_in_bytes
-            name: size_bytes
-        - path: io_stats.devices.*
-          name: io_stats_device
+          - name: type
+            value: total
+        - path: sys_in_millis
+          name: cpu_time_seconds_sum
+          modifiers: [*ms-to-secs]
           labels:
-          - name: device
-            value: $2
-          metrics:
-          - path: operations
-            name: operations_count
-          - path: read_operations
-            name: read_operations_count
-          - path: write_operations
-            name: write_operations_count
-          - path: read_kilobytes
-            name: read_size_kilobytes_sum
-          - path: write_kilobytes
-            name: write_size_kilobytes_sum
+          - name: type
+            value: sys
+        - path: user_in_millis
+          name: cpu_time_seconds_sum
+          modifiers: [*ms-to-secs]
+          labels:
+          - name: type
+            value: user
+      - path: mem
+        # TODO: did not find resident & share memory in stats
+        metrics:
+        - path: total_resident_in_bytes
+          name: resident_size_bytes
+        - path: total_share_in_bytes
+          name: share_size_bytes
+        - path: total_virtual_in_bytes
+          name: virtual_size_bytes
+      - path: open_file_descriptors
+        name: open_files_count
+      - path: max_file_descriptors
+        name: max_files_descriptors
+    - path: transport
+      metrics:
+      - path: rx_count
+        name: rx_packets_total
+      - path: rx_size_in_bytes
+        name: rx_size_bytes_total
+      - path: tx_count
+        name: tx_packets_total
+      - path: tx_size_in_bytes
+        name: tx_size_bytes_total
+    - path: breakers.*
+      name: breakers
+      labels:
+      - name: breaker
+        value: $1
+      metrics:
+      - path: estimated_size_in_bytes
+        name: estimated_size_bytes
+      - path: limit_size_in_bytes
+        name: limit_size_bytes
+      - tripped
+      - overhead
+    - path: thread_pool.*
+      name: thread_pool
+      labels:
+      - name: type
+        value: $1
+      metrics:
+      - path: '*'
+        name: ${0}_count
+    - path: fs
+      name: filesystem
+      metrics:
+      - path: data.*
+        name: data
+        labels:
+        - name: mount
+          value: ${.mount}
+        - name: path
+          value: ${.path}
+        metrics:
+        - path: available_in_bytes
+          name: available_bytes
+        - path: free_in_bytes
+          name: free_bytes
+        - path: total_in_bytes
+          name: size_bytes
+      - path: io_stats.devices.*
+        name: io_stats_device
+        labels:
+        - name: device
+          value: $2
+        metrics:
+        - path: operations
+          name: operations_count
+        - path: read_operations
+          name: read_operations_count
+        - path: write_operations
+          name: write_operations_count
+        - path: read_kilobytes
+          name: read_size_kilobytes_sum
+        - path: write_kilobytes
+          name: write_size_kilobytes_sum
 
 - url: *indices-stats
   metrics:
@@ -392,49 +395,80 @@ endpoints:
     metrics:
     - name: ''
       path: primaries
+      # TODO: context variables
       contextvars:
       - name: type
         value: primary
-      metrics: &index-metrics
+      metrics:
       - path: docs.count
-        name: docs_${type}
+        name: docs_primary
       - path: docs.deleted
-        name: deleted_docs_${type}
+        name: deleted_docs_primary
       - path: store.size_in_bytes
-        name: store_size_bytes_${type}
+        name: store_size_bytes_primary
       - path: segments
         name: segment
         metrics:
         - path: count
-          name: count_${type}
+          name: count_primary
         - path: memory_in_bytes
-          name: memory_bytes_${type}
+          name: memory_bytes_primary
         - path: terms_memory_in_bytes
-          name: terms_memory_${type}
+          name: terms_memory_primary
         - path: stored_fields_memory_in_bytes
-          name: fields_memory_bytes_${type}
+          name: fields_memory_bytes_primary
         - path: term_vectors_memory_in_bytes
-          name: term_vectors_memory_${type}_bytes
+          name: term_vectors_memory_primary_bytes
         - path: norms_memory_in_bytes
-          name: norms_memory_bytes_${type}
+          name: norms_memory_bytes_primary
         - path: points_memory_in_bytes
-          name: points_memory_bytes_${type}
+          name: points_memory_bytes_primary
         - path: doc_values_memory_in_bytes
-          name: doc_values_memory_bytes_${type}
+          name: doc_values_memory_bytes_primary
         - path: index_writer_memory_in_bytes
-          name: index_writer_memory_bytes_${type}
+          name: index_writer_memory_bytes_primary
         - path: version_map_memory_in_bytes
-          name: version_map_memory_bytes_${type}
+          name: version_map_memory_bytes_primary
         - path: fixed_bit_set_memory_in_byte
-          name: fixed_bit_set_memory_bytes_${type}
+          name: fixed_bit_set_memory_bytes_primary
       - path: completion.size_in_bytes
-        name: completion_bytes_${type}
+        name: completion_bytes_primary
     - path: total
       name: ''
-      contextvars:
-      - name: type
-        value: total
-      metrics: *index-metrics
+      metrics:
+      - path: docs.count
+        name: docs_total
+      - path: docs.deleted
+        name: deleted_docs_total
+      - path: store.size_in_bytes
+        name: store_size_bytes_total
+      - path: segments
+        name: segment
+        metrics:
+        - path: count
+          name: count_total
+        - path: memory_in_bytes
+          name: memory_bytes_total
+        - path: terms_memory_in_bytes
+          name: terms_memory_total
+        - path: stored_fields_memory_in_bytes
+          name: fields_memory_bytes_total
+        - path: term_vectors_memory_in_bytes
+          name: term_vectors_memory_total_bytes
+        - path: norms_memory_in_bytes
+          name: norms_memory_bytes_total
+        - path: points_memory_in_bytes
+          name: points_memory_bytes_total
+        - path: doc_values_memory_in_bytes
+          name: doc_values_memory_bytes_total
+        - path: index_writer_memory_in_bytes
+          name: index_writer_memory_bytes_total
+        - path: version_map_memory_in_bytes
+          name: version_map_memory_bytes_total
+        - path: fixed_bit_set_memory_in_byte
+          name: fixed_bit_set_memory_bytes_total
+      - path: completion.size_in_bytes
+        name: completion_bytes_total
     - path: total
       name: index_stats
       metrics:
@@ -493,11 +527,15 @@ endpoints:
           modifiers: [*ms-to-secs]
         - path: total_auto_throttle_in_bytes
           name: merge_auto_throttle_bytes_total
-      - path: '[refresh,flush,warmer]'
-        metrics:
+      - path: refresh
+        metrics: &refresh-metrics
         - path: total_time_in_millis
           name: time_seconds_total
         - total
+      - path: flush
+        metrics: *refresh-metrics
+      - path: warmer
+        metrics: *refresh-metrics
       - path: query_cache
         metrics:
         - path: memory_size_in_bytes

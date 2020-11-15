@@ -10,7 +10,7 @@ pub trait Filter {
 }
 
 #[throws(AnyhowError)]
-fn single_arg_f64(args: &YamlValue) -> f64 {
+fn single_arg_f64(args: &YamlValue, map_key: &str) -> f64 {
     match args {
         YamlValue::Number(f) => f.as_f64().unwrap(),
         YamlValue::Sequence(seq) => {
@@ -23,7 +23,7 @@ fn single_arg_f64(args: &YamlValue) -> f64 {
             if map.len() > 1 {
                 throw!(anyhow!("Too many arguments: {:?}", args));
             }
-            match map.get(&YamlValue::from("factor")) {
+            match map.get(&YamlValue::from(map_key)) {
                 Some(YamlValue::Number(f)) => f.as_f64().unwrap(),
                 _ => throw!(anyhow!("Invalid argument: {:?}", args)),
             }
@@ -40,7 +40,7 @@ impl Multiply {
     #[throws(AnyhowError)]
     pub fn create(args: &YamlValue) -> Box<dyn Filter> {
         Box::new(Self {
-            factor: single_arg_f64(args)?
+            factor: single_arg_f64(args, "factor")?
         }) as Box<dyn Filter>
     }
 }
@@ -65,7 +65,7 @@ impl Divide {
     #[throws(AnyhowError)]
     pub fn create(args: &YamlValue) -> Box<dyn Filter> {
         Box::new(Self {
-            denominator: single_arg_f64(args)?
+            denominator: single_arg_f64(args, "divisor")?
         }) as Box<dyn Filter>
     }
 }

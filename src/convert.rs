@@ -7,10 +7,17 @@ use std::collections::HashMap;
 use std::fmt::Write;
 use std::io::{Write as IOWrite};
 
-use crate::config::{MetricType, PreparedMetric, PreparedMetrics};
+use crate::config::MetricType;
+use crate::prepare::{
+    PreparedLabels,
+    PreparedMetric,
+    PreparedMetrics,
+};
 
 impl PreparedMetrics {
-    pub fn process(&self, json: &Value, buf: &mut Vec<u8>) {
+    pub fn process(
+        &self, root_metric: &ResolvedMetric, json: &Value, buf: &mut Vec<u8>
+    ) {
         let mut stack: Vec<
             (
                 std::slice::Iter<PreparedMetric>,
@@ -20,8 +27,8 @@ impl PreparedMetrics {
         stack.push((self.iter(), None));
         let mut seen_metrics = HashMap::new();
 
-        println!("{:?}", json);
-        println!("{:?}", jsonpath::Selector::new("$").unwrap().find(json).map(|v| v.value).collect::<Vec<_>>());
+        // println!("{:?}", json);
+        // println!("{:?}", jsonpath::Selector::new("$").unwrap().find(json).map(|v| v.value).collect::<Vec<_>>());
 
         while let Some((ref mut current_metrics, parent_state)) = stack.last_mut() {
             match current_metrics.next() {
@@ -43,16 +50,19 @@ impl PreparedMetrics {
                             .filter_map(|v| {
                                 metric.resolve(&v).map(|m| (v.value, m))
                             })
+                            .map(move |(v, m)| {
+                                (v, m.merge_with_parent(root_metric))
+                            })
                             .collect::<Vec<_>>()
                     };
 
-                    if metric.metrics.is_empty() {
+                    if metric.metrics.0.is_empty() {
                         // leaf metric
-                        println!("! {}", &metric.selector.expression);
-                        for (json, resolved_metric) in &state {
-                            println!("  {}", resolved_metric);
-                            println!("  {:?}", json);
-                        }
+                        // println!("! {}", &metric.selector.expression);
+                        // for (json, resolved_metric) in &state {
+                        //     println!("  {}", resolved_metric);
+                        //     println!("  {:?}", json);
+                        // }
 
                         'metrics_loop: for (json, resolved_metric) in &state {
                             // TODO: apply filters for all values not only leaf
@@ -66,7 +76,7 @@ impl PreparedMetrics {
                                         Ok(v) => {
                                             _value = v;
                                         }
-                                        Err(e) => {
+                                        Err(_e) => {
                                             // TODO: log error
                                             continue 'metrics_loop;
                                         },
@@ -88,11 +98,11 @@ impl PreparedMetrics {
                         }
                     } else {
                         // parent_metric
-                        println!("> {}", &metric.selector.expression);
-                        for (json, resolved_metric) in &state {
-                            println!("  {}", resolved_metric);
-                            println!("  {:?}", json);
-                        }
+                        // println!("> {}", &metric.selector.expression);
+                        // for (json, resolved_metric) in &state {
+                        //     println!("  {}", resolved_metric);
+                        //     println!("  {:?}", json);
+                        // }
 
                         stack.push((metric.metrics.iter(), Some(state)));
                     }
@@ -103,6 +113,48 @@ impl PreparedMetrics {
             }
 
         }
+    }
+}
+
+impl PreparedLabels {
+    pub fn resolve(&self, found: &Found) -> BTreeMap<String, String> {
+        let mut labels = BTreeMap::new();
+        for label in &self.labels {
+            if let Some(label_value) = (label.value_processor)(found) {
+                // Escape label values here so we shouldn't escape them when dumping
+                let safe_value = match self.should_escape_label_value(&label_value) {
+                    0 => label_value,
+                    num_escapes => self.escape_label_value(&label_value, num_escapes),
+                };
+                labels.insert(
+                    label.name.clone(), safe_value
+                );
+            }
+        }
+        labels
+    }
+
+    fn should_escape_label_value(&self, label_value: &str) -> usize {
+        let mut count = 0;
+        for c in label_value.chars() {
+            if c == '\\' || c == '"' || c == '\n' {
+                count += 1;
+            }
+        }
+        count
+    }
+
+    fn escape_label_value(&self, label_value: &str, num_escapes: usize) -> String {
+        let mut escaped_value = String::with_capacity(label_value.len() + num_escapes * 2);
+        for c in label_value.chars() {
+            match c {
+                '"' => escaped_value.push_str("\\\""),
+                '\n' => escaped_value.push_str("\\n"),
+                '\\' => escaped_value.push_str("\\\\"),
+                c => escaped_value.push(c),
+            }
+        }
+        escaped_value
     }
 }
 
@@ -136,56 +188,20 @@ impl PreparedMetric {
             }
         };
 
-        let mut labels = BTreeMap::new();
-        for label in &self.labels {
-            if let Some(label_value) = (label.value_processor)(found) {
-                // Escape label values here so we shouldn't escape them when dumping
-                let safe_value = match self.should_escape_label_value(&label_value) {
-                    0 => label_value,
-                    num_escapes => self.escape_label_value(&label_value, num_escapes),
-                };
-                labels.insert(
-                    label.name.clone(), safe_value
-                );
-            }
-        }
-
         Some(ResolvedMetric {
             name,
             metric_type: self.metric_type,
-            labels,
+            labels: self.labels.resolve(found),
         })
-    }
-
-    fn should_escape_label_value(&self, label_value: &str) -> usize {
-        let mut count = 0;
-        for c in label_value.chars() {
-            if c == '\\' || c == '"' || c == '\n' {
-                count += 1;
-            }
-        }
-        count
-    }
-
-    fn escape_label_value(&self, label_value: &str, num_escapes: usize) -> String {
-        let mut escaped_value = String::with_capacity(label_value.len() + num_escapes * 2);
-        for c in label_value.chars() {
-            match c {
-                '"' => escaped_value.push_str("\\\""),
-                '\n' => escaped_value.push_str("\\n"),
-                '\\' => escaped_value.push_str("\\\\"),
-                c => escaped_value.push(c),
-            }
-        }
-        escaped_value
     }
 }
 
-struct ResolvedMetric {
-    name: String,
-    metric_type: Option<MetricType>,
+#[derive(Default)]
+pub struct ResolvedMetric {
+    pub name: String,
+    pub metric_type: Option<MetricType>,
     // Use BTreeMap for reproducible tests
-    labels: BTreeMap<String, String>,
+    pub labels: BTreeMap<String, String>,
 }
 
 impl ResolvedMetric {
@@ -328,6 +344,8 @@ impl std::fmt::Display for ResolvedMetric {
 #[cfg(test)]
 mod tests {
     use crate::config::Metrics;
+    use crate::prepare::PreparedMetrics;
+    use super::ResolvedMetric;
 
     use indoc::indoc;
 
@@ -336,12 +354,13 @@ mod tests {
 
 
     fn process_with_config(config: &str, data: &str) -> String {
-        let metrics_config: Metrics = serde_yaml::from_str(config).expect("parse config");
-        let prepared_metrics = metrics_config.prepare().expect("prepare config");
+        let metrics: Metrics = serde_yaml::from_str(config).expect("parse config");
+        let prepared_metrics = PreparedMetrics::create_from(&metrics.metrics, None).expect("prepare config");
         let json: Value = serde_json::from_str(data).expect("parse json");
 
+        let ctx = ResolvedMetric::default();
         let mut buf = vec!();
-        prepared_metrics.process(&json, &mut buf);
+        prepared_metrics.process(&ctx, &json, &mut buf);
         String::from_utf8(buf).expect("utf8 string")
     }
 

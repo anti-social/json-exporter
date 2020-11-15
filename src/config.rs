@@ -1,12 +1,9 @@
-use anyhow::{anyhow, Error as AnyhowError};
+use anyhow::Error as AnyhowError;
 
-use fehler::{throw, throws};
-
-use jsonpath::{Selector, Found, Step};
+use fehler::throws;
 
 use serde::{Deserialize, Deserializer};
 use serde::de::{Visitor, SeqAccess};
-use serde_json::Value;
 
 use std::fmt;
 use std::marker::PhantomData;
@@ -14,63 +11,61 @@ use std::str::FromStr;
 
 use void::Void;
 
-use crate::tmpl::{
-    string_with_placeholders,
-    Placeholder,
-    Var,
-};
-use crate::filters::{self, Filter as PreparedFilter};
+use crate::prepare::PreparedConfig;
 
-
-type TemplateProcessor = Box<dyn Fn(&Found) -> Option<String>>;
 
 #[derive(Deserialize)]
 pub struct Config {
-    namespace: Option<String>,
-    global_labels: Vec<GlobalLabel>,
-    endpoints: Vec<Endpoint>,
+    pub namespace: Option<String>,
+    pub global_labels: Vec<GlobalLabels>,
+    pub endpoints: Vec<Endpoint>,
+}
+
+impl Config {
+    #[throws(AnyhowError)]
+    pub fn prepare(&self) -> PreparedConfig {
+        PreparedConfig::create_from(self)?
+    }
 }
 
 #[derive(Deserialize)]
-pub struct GlobalLabel {
-    url: String,
-    labels: Vec<Label>,
+pub struct GlobalLabels {
+    pub url: String,
+    pub labels: Vec<Label>,
+}
+
+#[derive(Deserialize)]
+pub struct Label {
+    pub name: String,
+    pub value: String,
 }
 
 #[derive(Deserialize)]
 pub struct Endpoint {
-    url: String,
-    #[serde(flatten)]
-    metrics: Metrics,
+    pub url: String,
+    #[serde(deserialize_with = "deserialize_metrics")]
+    pub metrics: Vec<Metric>,
 }
 
 #[derive(Deserialize)]
 pub struct Metrics {
-    name: Option<String>,
     #[serde(deserialize_with = "deserialize_metrics")]
-    metrics: Vec<Metric>,
-}
-
-impl Metrics {
-    #[throws(AnyhowError)]
-    pub fn prepare(&self) -> PreparedMetrics {
-        PreparedMetrics(PreparedMetrics::from_metrics(&self.metrics, None)?)
-    }
+    pub metrics: Vec<Metric>,
 }
 
 #[derive(Deserialize, Default)]
 pub struct Metric {
-    path: String,
-    name: Option<String>,
+    pub path: String,
+    pub name: Option<String>,
     #[serde(rename = "type", default)]
-    metric_type: Option<MetricType>,
+    pub metric_type: Option<MetricType>,
     #[serde(default)]
-    modifiers: Vec<Filter>,
+    pub modifiers: Vec<Filter>,
     #[serde(default)]
-    labels: Vec<Label>,
+    pub labels: Vec<Label>,
     #[serde(default)]
     #[serde(deserialize_with = "deserialize_metrics")]
-    metrics: Vec<Metric>,
+    pub metrics: Vec<Metric>,
 }
 
 impl FromStr for Metric {
@@ -133,241 +128,25 @@ pub enum MetricType {
 }
 
 #[derive(Deserialize)]
-struct Filter {
-    name: String,
-    args: serde_yaml::Value,
-}
-
-impl Filter {
-    #[throws(AnyhowError)]
-    fn prepare(&self) -> Box<dyn PreparedFilter> {
-        let create_filter = match self.name.as_str() {
-            "mul" | "multiply" => filters::Multiply::create,
-            "div" | "divide" => filters::Divide::create,
-            _ => throw!(anyhow!("Unknown filter: {}", &self.name)),
-        };
-        create_filter(&self.args)?
-    }
-}
-
-#[derive(Deserialize)]
-pub struct Label {
-    name: String,
-    value: String,
-}
-
-pub struct PreparedMetrics(pub(crate) Vec<PreparedMetric>);
-
-impl PreparedMetrics {
-    #[throws(AnyhowError)]
-    fn from_metrics(
-        metrics: &Vec<Metric>,
-        metric_type: Option<MetricType>
-    ) -> Vec<PreparedMetric> {
-        let mut prepared_metrics = vec!();
-        for metric in metrics {
-            prepared_metrics.push(PreparedMetric::from_metric(metric, metric_type)?);
-        }
-        prepared_metrics
-    }
-
-    pub fn iter(&self) -> std::slice::Iter<PreparedMetric> {
-        self.0.iter()
-    }
-}
-
-pub struct PreparedMetric {
-    pub selector: JsonSelector,
-    pub metric_type: Option<MetricType>,
-    pub name: Option<String>,
-    pub name_processor: Option<TemplateProcessor>,
-    pub filters: Vec<Box<dyn PreparedFilter>>,
-    pub labels: Vec<PreparedLabel>,
-    pub metrics: Vec<PreparedMetric>
-}
-
-impl PreparedMetric {
-    #[throws(AnyhowError)]
-    fn from_metric(
-        metric: &Metric,
-        parent_metric_type: Option<MetricType>,
-    ) -> Self {
-        let metric_type = metric.metric_type.or(parent_metric_type);
-        // TODO: validate matric and label names
-        let name = metric.name.clone();
-        let name_processor = metric.name.as_ref().map(|n| make_value_processor(n))
-            .transpose()?;
-        let selector = JsonSelector::new(&metric.path)?;
-
-        let mut prepared_filters = vec!();
-        for filter in &metric.modifiers {
-            prepared_filters.push(filter.prepare()?);
-        }
-
-        let mut prepared_labels = vec!();
-        for label in &metric.labels {
-            prepared_labels.push(PreparedLabel::from_label(label)?);
-        }
-        Self {
-            metric_type,
-            name,
-            name_processor,
-            selector,
-            filters: prepared_filters,
-            labels: prepared_labels,
-            metrics: PreparedMetrics::from_metrics(&metric.metrics, metric_type)?,
-        }
-    }
-}
-
-pub struct JsonSelector {
-    pub expression: String,
-    selector: Selector,
-}
-
-impl JsonSelector {
-    #[throws(AnyhowError)]
-    fn new(expression: &str) -> Self {
-        let expression = if expression.is_empty() {
-            "$".to_string()
-        } else {
-            format!("$.{}", expression)
-        };
-        let selector = Selector::new(&expression)
-            .map_err(|e| anyhow!(
-                "Error when creating json selector [{}]: {}", expression, e
-            ))?;
-
-        Self {
-            expression,
-            selector,
-        }
-    }
-
-    pub fn find<'a>(&'a self, root: &'a Value) -> impl Iterator<Item=Found<'_>> {
-        self.selector.find(root)
-    }
-}
-
-pub struct PreparedLabel {
+pub struct Filter {
     pub name: String,
-    pub value_processor: TemplateProcessor,
+    pub args: serde_yaml::Value,
 }
 
-impl PreparedLabel {
-    #[throws(AnyhowError)]
-    fn from_label(label: &Label) -> Self {
-        PreparedLabel {
-            name: label.name.clone(),
-            value_processor: make_value_processor(&label.value)?,
-        }
-    }
-}
-
-fn make_value_processor(tmpl: &str) -> Result<TemplateProcessor, AnyhowError> {
-    if tmpl.is_empty() {
-        let value = tmpl.to_string();
-        return Ok(Box::new(move |_| Some(value.clone())));
-    }
-
-    let placeholders = string_with_placeholders(tmpl).map_err(|e| {
-        e.map(|e| nom::Err::Error((e.input.to_string(), e.code)))
-    })?.1;
-    let processor: TemplateProcessor = match &placeholders[..] {
-        [] => {
-            let value = tmpl.to_string();
-            Box::new(move |_| Some(value.clone()))
-        }
-        [Placeholder::Text(text)] => {
-            let text = text.clone();
-            Box::new(move |_| Some(text.clone()))
-        }
-        [Placeholder::Var(Var::Ix(path_ix))] => {
-            let path_ix = *path_ix;
-            Box::new(move |found| {
-                match found.path[path_ix as usize + 1] {
-                    Step::Key(key) => Some(key.to_string()),
-                    Step::Index(ix) => Some(ix.to_string()),
-                    Step::Root => panic!(),
-                }
-            })
-        }
-        [Placeholder::Var(Var::Ident(ident))] => {
-            let selector = JsonSelector::new(ident)?;
-            Box::new(move |found| {
-                selector.find(found.value)
-                    .next()
-                    .map(|found_value| found_value.value)
-                    .and_then(|v| match v {
-                        Value::String(v) => Some(v.clone()),
-                        Value::Bool(v) => Some(v.to_string()),
-                        Value::Number(v) => Some(v.to_string()),
-                        _ => None,
-                    })
-            })
-        }
-        placeholders => {
-            let placeholders = placeholders.to_vec();
-            Box::new(move |found| {
-                let mut text = String::new();
-                for placeholder in &placeholders {
-                    match placeholder {
-                        Placeholder::Text(t) => {
-                            text.push_str(t);
-                        }
-                        Placeholder::Var(Var::Ix(path_ix)) => {
-                            match found.path[*path_ix as usize + 1] {
-                                Step::Key(key) => text.push_str(key),
-                                Step::Index(ix) => text.push_str(&ix.to_string()),
-                                Step::Root => panic!(),
-                            }
-                        }
-                        Placeholder::Var(Var::Ident(ident)) => {
-                            // FIXME: rid of unwrap
-                            let selector = JsonSelector::new(ident).unwrap();
-                            selector.find(found.value)
-                                .next()
-                                .map(|found_value| found_value.value)
-                                .map(|v| match v {
-                                    Value::String(v) => text.push_str(&v),
-                                    Value::Bool(v) => text.push_str(&v.to_string()),
-                                    Value::Number(v) => text.push_str(&v.to_string()),
-                                    _ => {},
-                                });
-                        }
-                    }
-                }
-                Some(text)
-            })
-        }
-    };
-    Ok(processor)
-}
 
 #[cfg(test)]
 mod tests {
-    use indoc::indoc;
     use serde_yaml;
     use std::fs::File;
-    use crate::config::{Config, Metrics};
-
-    #[test]
-    fn test_parsing_config() {
-        let _metrics: Metrics = serde_yaml::from_str(indoc! {"
-          metrics:
-          - path: asdf
-            name: test
-            metrics:
-            - path: fdsa
-              name: '1234'
-        "})
-            .expect("valid yaml");
-    }
+    use std::io::BufReader;
+    use crate::config::Config;
 
     #[test]
     fn test_elasticsearch_exporter_config() {
         let filename = "elasticsearch_exporter.yaml";
-        let file = File::open(filename).expect(filename);
+        let file = BufReader::new(
+            File::open(filename).expect(filename)
+        );
         let _config: Config = serde_yaml::from_reader(file).unwrap();
     }
 }
