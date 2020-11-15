@@ -6,7 +6,7 @@ use json_exporter::prepare::PreparedConfig;
 
 use std::collections::BTreeMap;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, BufRead};
 use std::io::Write;
 
 use serde_json;
@@ -16,7 +16,6 @@ const ES_INFO: &'static str = include_str!("es_info.json");
 const ES_CLUSTER_HEALTH: &'static str = include_str!("es_cluster_health.json");
 const ES_NODES_STATS: &'static str = include_str!("es_nodes_stats.json");
 const ES_INDICES_STATS: &'static str = include_str!("es_indices_stats.json");
-const ES_METRICS: &'static str = include_str!("es_metrics.txt");
 
 #[test]
 fn test_elasticsearch() {
@@ -81,5 +80,16 @@ fn test_elasticsearch() {
     // es_metrics_file.write(&buf[..]).unwrap();
     // es_metrics_file.flush();
 
-    assert_eq!(&buf[..], ES_METRICS.as_bytes());
+    let es_metrics_filename = "tests/es_metrics.txt";
+    let expected_metrics = BufReader::new(
+        File::open(es_metrics_filename).expect(es_metrics_filename)
+    );
+    let metrics = String::from_utf8(buf).expect("metrics must be utf8");
+    for (line_ix, (line, expected_line)) in metrics.lines()
+        .zip(expected_metrics.lines())
+        .enumerate()
+    {
+        let expected_line = expected_line.expect("read line");
+        assert_eq!(line, expected_line, "Line number: {}", line_ix + 1);
+    }
 }

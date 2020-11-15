@@ -20,6 +20,12 @@ global_labels:
   - name: cluster
     value: ${.cluster_name}
 
+# TODO: consider adding metric type overrides
+# metric_type_overrides:
+#   counter:
+#   - thread_pool_completed_count
+#   - thread_pool_rejected_count
+
 endpoints:
 - url: *cluster-health
   name: cluster_health
@@ -87,7 +93,9 @@ endpoints:
         - &cache-memory_size_bytes
           path: memory_size_in_bytes
           name: memory_size_bytes
-        - &cache-evictions evictions
+        - &cache-evictions
+          path: evictions
+          type: counter
       - path: completion.size_in_bytes
         name: completion_size_bytes
       - path: query_cache
@@ -96,19 +104,23 @@ endpoints:
         - *cache-evictions
         - path: total_count
           name: total
+          type: counter
         - cache_size
         - path: cache_count
           name: cache_total
+          type: counter
       - path: query_cache
         name: query
         metrics: &cache-hit-miss-metrics
         - path: hit_count
           name: cache_count
+          type: counter
           labels:
           - name: cache
             value: hit
         - path: miss_count
           name: miss_count
+          type: counter
           labels:
           - name: cache
             value: miss
@@ -127,41 +139,57 @@ endpoints:
         metrics:
         - path: time_in_millis
           name: time_seconds
+          type: counter
           modifiers: [*ms-to-secs]
-        - total
+        - path: total
+          type: counter
         - path: missing_time_in_millis
           name: missing_time_seconds
+          type: counter
           modifiers: [*ms-to-secs]
-        - missing_total
+        - path: missing_total
+          type: counter
         - path: exists_time_in_millis
           name: exists_time_seconds
+          type: counter
           modifiers: [*ms-to-secs]
-        - exists_total
+        - path: exists_total
+          type: counter
       - path: refresh
         metrics:
         - path: total_time_in_millis
           name: time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
-        - total
+        - path: total
+          type: counter
       - path: search
         metrics:
         - open_contexts
         - path: query_time_in_millis
           name: query_time_seconds
+          type: counter
           modifiers: [*ms-to-secs]
-        - query_total
+        - path: query_total
+          type: counter
         - path: fetch_time_in_millis
           name: fetch_time_seconds
+          type: counter
           modifiers: [*ms-to-secs]
-        - fetch_total
+        - path: fetch_total
+          type: counter
         - path: suggest_time_in_millis
           name: suggest_time_seconds
+          type: counter
           modifiers: [*ms-to-secs]
-        - suggest_total
+        - path: suggest_total
+          type: counter
         - path: scroll_time_in_millis
           name: scroll_time_seconds
+          type: counter
           modifiers: [*ms-to-secs]
-        - scroll_total
+        - path: scroll_total
+          type: counter
       - path: docs
         metrics:
         - path: count
@@ -186,12 +214,14 @@ endpoints:
         - points_memory_in_bytes
         - version_map_memory_in_bytes
       - path: flush
+        type: counter
         metrics:
         - total
         - name: time_seconds
           path: total_time_in_millis
           modifiers: [*ms-to-secs]
       - path: warmer
+        type: counter
         metrics:
         - total
         - path: total_time_in_millis
@@ -201,30 +231,40 @@ endpoints:
         metrics:
         - path: index_time_in_millis
           name: index_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
-        - index_total
+        - path: index_total
+          type: counter
         - path: delete_time_in_millis
           name: delete_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
-        - delete_total
+        - path: delete_total
+          type: counter
         - is_throttled
         - path: throttle_time_in_millis
           name: throttle_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
       - path: merges
         metrics:
-        - total
+        - path: total
+          type: counter
         - current
         - current_size_in_bytes
         - path: total_docs
           name: docs_total
+          type: counter
         - path: total_size_in_bytes
           name: total_size_bytes_total
+          type: counter
         - path: total_time_in_millis
           name: total_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
         - path: total_throttled_time_in_millis
           name: total_throttled_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
     - path: jvm
       metrics:
@@ -275,6 +315,7 @@ endpoints:
           name: used_bytes
       - path: gc.collectors.*
         name: gc_collection
+        type: counter
         labels:
         - name: gc
           value: $2
@@ -292,18 +333,21 @@ endpoints:
         - percent
         - path: total_in_millis
           name: cpu_time_seconds_sum
+          type: counter
           modifiers: [*ms-to-secs]
           labels:
           - name: type
             value: total
         - path: sys_in_millis
           name: cpu_time_seconds_sum
+          type: counter
           modifiers: [*ms-to-secs]
           labels:
           - name: type
             value: sys
         - path: user_in_millis
           name: cpu_time_seconds_sum
+          type: counter
           modifiers: [*ms-to-secs]
           labels:
           - name: type
@@ -322,6 +366,7 @@ endpoints:
       - path: max_file_descriptors
         name: max_files_descriptors
     - path: transport
+      type: counter
       metrics:
       - path: rx_count
         name: rx_packets_total
@@ -341,8 +386,10 @@ endpoints:
         name: estimated_size_bytes
       - path: limit_size_in_bytes
         name: limit_size_bytes
-      - tripped
-      - overhead
+      - path: tripped
+        type: counter
+      - path: overhead
+        type: counter
     - path: thread_pool.*
       name: thread_pool
       labels:
@@ -370,6 +417,7 @@ endpoints:
           name: size_bytes
       - path: io_stats.devices.*
         name: io_stats_device
+        type: counter
         labels:
         - name: device
           value: $2
@@ -477,22 +525,31 @@ endpoints:
         - open_contexts
         - path: query_time_in_millis
           name: query_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
-        - query_total
+        - path: query_total
+          type: counter
         - path: fetch_time_in_millis
           name: fetch_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
-        - fetch_total
+        - path: fetch_total
+          type: counter
         - path: scroll_time_in_millis
           name: scroll_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
         - scroll_current
-        - scroll_total
+        - path: scroll_total
+          type: counter
         - path: suggest_time_in_millis
           name: suggest_time_seconds_total
+          type: counter
           modifiers: [*ms-to-secs]
-        - suggest_total
+        - path: suggest_total
+          type: counter
       - path: indexing
+        type: counter
         metrics:
         - path: index_time_in_millis
           name: index_time_seconds_total
@@ -507,6 +564,7 @@ endpoints:
           name: throttle_time_seconds_total
           modifiers: [*ms-to-secs]
       - path: get
+        type: counter
         metrics:
         - path: time_in_millis
           name: time_seconds_total
@@ -514,6 +572,7 @@ endpoints:
         - total
       - path: merges
         name: merge
+        type: counter
         metrics:
         - path: total_time_in_millis
           name: time_seconds_total
@@ -531,7 +590,9 @@ endpoints:
         metrics: &refresh-metrics
         - path: total_time_in_millis
           name: time_seconds_total
-        - total
+          type: counter
+        - path: total
+          type: counter
       - path: flush
         metrics: *refresh-metrics
       - path: warmer
@@ -543,28 +604,36 @@ endpoints:
         - cache_size
         - path: hit_count
           name: hits_total
+          type: counter
         - path: miss_count
           name: misses_total
+          type: counter
         - path: cache_count
           name: caches_total
+          type: counter
         - path: evictions
           name: evictions_total
+          type: counter
       - path: request_cache
         metrics:
         - path: memory_size_in_bytes
           name: cache_memory_bytes_total
         - path: hit_count
           name: hits_total
+          type: counter
         - path: miss_count
           name: misses_total
+          type: counter
         - path: evictions
           name: evictions_total
+          type: counter
       - path: fielddata
         metrics:
         - path: memory_size_in_bytes
           name: memory_bytes_total
         - path: evictions
           name: evictions_total
+          type: counter
     - path: shards.*.*
       name: shards
       labels:
