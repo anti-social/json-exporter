@@ -157,7 +157,7 @@ dependencies = [
 [[package]]
 name = "jsonpath"
 version = "0.1.2"
-source = "git+https://github.com/anti-social/jsonpath-rs?rev=62b4ecb#62b4ecb0f558327ba68a3c2c631002e603ebec78"
+source = "git+https://github.com/anti-social/jsonpath-rs?rev=8d7e139#8d7e1399eb96743b52fffb555a229f2ef328cfb1"
 dependencies = [
  "error-chain",
  "pest",

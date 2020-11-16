@@ -1,4 +1,4 @@
-use jsonpath::{Found, Step};
+use jsonpath::{Match, Step};
 
 use json_exporter::config::Config;
 use json_exporter::convert::ResolvedMetric;
@@ -29,7 +29,7 @@ fn test_elasticsearch() {
         .expect("prepare es config");
 
     let es_info = serde_json::from_str(ES_INFO).expect("es info");
-    let es_info = Found {
+    let es_info = Match {
         value: &es_info,
         path: vec!(Step::Root),
     };

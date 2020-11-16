@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 anyhow = "1"
 fehler = "1"
-jsonpath = { git = "https://github.com/anti-social/jsonpath-rs", rev = "62b4ecb" }
+jsonpath = { git = "https://github.com/anti-social/jsonpath-rs", rev = "8d7e139" }
 nom = { version = "6", features = ["alloc"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

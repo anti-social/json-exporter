@@ -1,4 +1,4 @@
-use jsonpath::{Found, Step};
+use jsonpath::{Match, Step};
 
 use serde_json::Value;
 
@@ -117,7 +117,7 @@ impl PreparedMetrics {
 }
 
 impl PreparedLabels {
-    pub fn resolve(&self, found: &Found) -> BTreeMap<String, String> {
+    pub fn resolve(&self, found: &Match) -> BTreeMap<String, String> {
         let mut labels = BTreeMap::new();
         for label in &self.labels {
             if let Some(label_value) = (label.value_processor)(found) {
@@ -159,7 +159,7 @@ impl PreparedLabels {
 }
 
 impl PreparedMetric {
-    fn resolve(&self, found: &Found) -> Option<ResolvedMetric> {
+    fn resolve(&self, found: &Match) -> Option<ResolvedMetric> {
         let name = match &self.name_processor {
             Some(name_processor) => {
                 if let Some(metric_name) = name_processor(found) {

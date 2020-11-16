@@ -2,7 +2,7 @@ use anyhow::{anyhow, Error as AnyhowError};
 
 use fehler::{throw, throws};
 
-use jsonpath::{Selector, Found, Step};
+use jsonpath::{Selector, Match, Step};
 
 use serde_json::Value;
 
@@ -28,7 +28,7 @@ use crate::tmpl::{
 };
 
 
-type TemplateProcessor = Box<dyn Fn(&Found) -> Option<String>>;
+type TemplateProcessor = Box<dyn Fn(&Match) -> Option<String>>;
 
 pub struct PreparedConfig {
     pub namespace: Option<String>,
@@ -205,7 +205,7 @@ impl JsonSelector {
         }
     }
 
-    pub fn find<'a>(&'a self, root: &'a Value) -> impl Iterator<Item=Found<'_>> {
+    pub fn find<'a>(&'a self, root: &'a Value) -> impl Iterator<Item=Match<'_>> {
         self.selector.find(root)
     }
 }
