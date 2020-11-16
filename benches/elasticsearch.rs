@@ -17,6 +17,11 @@ use std::io::Write;
 extern crate test;
 use test::Bencher;
 
+use mimalloc::MiMalloc;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
 const ES_INFO: &'static str = "tests/es_info.json";
 const ES_CLUSTER_HEALTH: &'static str = "tests/es_cluster_health.json";
 const ES_NODES_STATS: &'static str = "benches/es_nodes_stats.json";

@@ -11,6 +11,7 @@ anyhow = "1"
 clap = "3.0.0-beta.2"
 fehler = "1"
 jsonpath = { git = "https://github.com/anti-social/jsonpath-rs", rev = "8d7e139" }
+mimalloc = { version = "0.1", default-features = false }
 nom = { version = "6", features = ["alloc"] }
 reqwest = "0.10"
 serde = { version = "1", features = ["derive"] }
