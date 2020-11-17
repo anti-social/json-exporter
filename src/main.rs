@@ -9,7 +9,7 @@ use actix_web::{
 };
 use actix_web::dev::HttpResponseBuilder;
 
-use anyhow::{Error as AnyError, Context};
+use anyhow::{bail, Context, Error as AnyError};
 
 use clap::Clap;
 
@@ -31,25 +31,25 @@ use json_exporter::convert::ResolvedMetric;
 #[derive(Clap, Debug)]
 struct Opts {
     #[clap(long)]
-    es_url: String,
+    base_url: String,
     config: PathBuf,
 }
 
 #[derive(Clone)]
 struct AppState {
-    es_url: Url,
+    base_url: Url,
     client: reqwest::Client,
     config: PreparedConfig,
     root_metric: ResolvedMetric,
 }
 
 impl AppState {
-    async fn from_config(config: PreparedConfig, es_url: Url) -> Result<Self, AnyError> {
+    async fn from_config(config: PreparedConfig, base_url: Url) -> Result<Self, AnyError> {
         let client = reqwest::Client::new();
 
         let mut global_labels = BTreeMap::new();
         for global_label in config.global_labels.iter() {
-            let labels_url = es_url.join(&global_label.url)?;
+            let labels_url = base_url.join(&global_label.url)?;
             let labels_resp = client.get(labels_url).send().await?;
             let labels_json = serde_json::from_str(&labels_resp.text().await?)?;
             let labels_root_match = Match {
@@ -68,7 +68,7 @@ impl AppState {
         };
 
         Ok(AppState {
-            es_url,
+            base_url,
             client,
             config,
             root_metric,
@@ -100,7 +100,7 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
     let mut buf = vec!();
     for endpoint in &data.config.endpoints {
         // TODO: make Url when preparing a config
-        let endpoint_url = data.es_url.join(&endpoint.url)?;
+        let endpoint_url = data.base_url.join(&endpoint.url)?;
         let resp = data.client.get(endpoint_url).send().await?;
         let json = serde_json::from_str(&resp.text().await?)?;
 
@@ -117,14 +117,19 @@ async fn main() -> Result<(), AnyError> {
     let config = read_config(&opts.config)?;
     let prepared_config = PreparedConfig::create_from(&config)?;
 
-    let es_url = Url::parse(&opts.es_url)
-        .with_context(|| format!("Invalid url: {}", &opts.es_url))?;
+    let base_url = Url::parse(&opts.base_url)
+        .with_context(|| format!("Invalid url: {}", &opts.base_url))?;
+    if base_url.query().is_some() || base_url.fragment().is_some() {
+        bail!(
+            "Base url must not contain query or fragment parts: {}", &base_url
+        );
+    }
 
     let app_state = loop {
         // TODO: How we can rid of those clones?
         let prepared_config = prepared_config.clone();
-        let es_url = es_url.clone();
-        match AppState::from_config(prepared_config, es_url).await {
+        let base_url = base_url.clone();
+        match AppState::from_config(prepared_config, base_url).await {
             Ok(app_state) => break app_state,
             Err(e) => {
                 // TODO: log.error
