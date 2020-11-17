@@ -35,6 +35,10 @@ static GLOBAL: MiMalloc = MiMalloc;
 
 #[derive(Clap, Debug)]
 struct Opts {
+    #[clap(long, short='H', default_value="127.0.0.1")]
+    host: String,
+    #[clap(long, short='P', default_value="9114")]
+    port: u16,
     #[clap(long)]
     base_url: String,
     config: PathBuf,
@@ -156,7 +160,7 @@ async fn main() -> Result<(), AnyError> {
             .data((*app_state).clone())
             .route("/metrics", web::get().to(metrics))
     })
-    .bind("127.0.0.1:9114")?
+    .bind(format!("{}:{}", &opts.host, &opts.port))?
     .run()
     .await?;
 
