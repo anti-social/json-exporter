@@ -21,7 +21,7 @@ use crate::prepare::{
 impl PreparedMetrics {
     pub fn process(
         &self, root_metric: &ResolvedMetric, json: &Value, buf: &mut Vec<u8>
-    ) {
+    ) -> Vec<(log::Level, String)> {
         let mut stack: Vec<
             (
                 std::slice::Iter<PreparedMetric>,
@@ -30,6 +30,7 @@ impl PreparedMetrics {
         > = vec!();
         stack.push((self.iter(), None));
         let mut seen_metrics = HashMap::new();
+        let mut warnings = vec!();
 
         // println!("{:?}", json);
         // println!("{:?}", jsonpath::Selector::new("$").unwrap().find(json).map(|v| v.value).collect::<Vec<_>>());
@@ -37,29 +38,13 @@ impl PreparedMetrics {
         while let Some((ref mut current_metrics, parent_state)) = stack.last_mut() {
             match current_metrics.next() {
                 Some(metric) => {
-                    let state = if let Some(parent_state) = parent_state {
-                        parent_state.iter()
-                            .flat_map(|(parent_json, parent_metric)| {
-                                metric.selector.find(parent_json)
-                                    .filter_map(|v| {
-                                        // TODO: log error
-                                        metric.resolve(&v).ok().map(|m| (v.value, m))
-                                    })
-                                    .map(move |(v, m)| {
-                                        (v, m.merge_with_parent(&parent_metric))
-                                    })
-                            })
-                            .collect::<Vec<_>>()
+                    let mut state = vec!();
+                    if let Some(parent_state) = parent_state {
+                        for (parent_json, parent_metric) in parent_state.iter() {
+                            metric.resolve_into(parent_metric, parent_json, &mut state, &mut warnings);
+                        }
                     } else {
-                        metric.selector.find(json)
-                            .filter_map(|v| {
-                                // TODO: log error
-                                metric.resolve(&v).ok().map(|m| (v.value, m))
-                            })
-                            .map(move |(v, m)| {
-                                (v, m.merge_with_parent(root_metric))
-                            })
-                            .collect::<Vec<_>>()
+                        metric.resolve_into(root_metric, json, &mut state, &mut warnings);
                     };
 
                     if metric.metrics.0.is_empty() {
@@ -82,8 +67,12 @@ impl PreparedMetrics {
                                         Ok(v) => {
                                             _value = v;
                                         }
-                                        Err(_e) => {
+                                        Err(e) => {
                                             // TODO: log error
+                                            warnings.push((
+                                                log::Level::Warn,
+                                                format!("Error when applying filter: {}", &e)
+                                            ));
                                             continue 'metrics_loop;
                                         },
                                     }
@@ -100,6 +89,10 @@ impl PreparedMetrics {
                                 }
                             } else {
                                 // TODO: log metric is not dumped
+                                warnings.push((
+                                    log::Level::Warn,
+                                    format!("Error when dumping metric: {:?}", resolved_metric)
+                                ));
                             }
                         }
                     } else {
@@ -117,8 +110,9 @@ impl PreparedMetrics {
                     stack.pop();
                 }
             }
-
         }
+
+        warnings
     }
 }
 
@@ -198,9 +192,33 @@ impl PreparedMetric {
             labels: self.labels.resolve(found)?,
         }
     }
+
+    fn resolve_into<'a: 'b, 'b>(
+        &'a self,
+        parent: &'b ResolvedMetric,
+        json: &'a Value,
+        resolved_metrics: &'b mut Vec<(&'a Value, ResolvedMetric)>,
+        warnings: &mut Vec<(log::Level, String)>,
+    ) {
+        for found in self.selector.find(json) {
+            let resolved_metric = match self.resolve(&found) {
+                Ok(m) => m,
+                Err(e) => {
+                    warnings.push(
+                        (log::Level::Warn, format!("{}", e))
+                    );
+                    continue;
+                }
+            };
+            resolved_metrics.push((
+                found.value,
+                resolved_metric.merge_with_parent(parent)
+            ));
+        }
+    }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct ResolvedMetric {
     pub name: String,
     pub metric_type: Option<MetricType>,
@@ -357,15 +375,15 @@ mod tests {
     use serde_yaml;
 
 
-    fn process_with_config(config: &str, data: &str) -> String {
+    fn process_with_config(config: &str, data: &str) -> (String, Vec<(log::Level, String)>) {
         let metrics: Metrics = serde_yaml::from_str(config).expect("parse config");
         let prepared_metrics = PreparedMetrics::create_from(&metrics.metrics, None).expect("prepare config");
         let json: Value = serde_json::from_str(data).expect("parse json");
 
         let ctx = ResolvedMetric::default();
         let mut buf = vec!();
-        prepared_metrics.process(&ctx, &json, &mut buf);
-        String::from_utf8(buf).expect("utf8 string")
+        let warns = prepared_metrics.process(&ctx, &json, &mut buf);
+        (String::from_utf8(buf).expect("utf8 string"), warns)
     }
 
     const DOCS_STATS: &'static str = indoc! {r#"
@@ -395,8 +413,9 @@ mod tests {
               metrics:
               - path: docs.*
         "};
+        let (metrics, warns) = process_with_config(config, DOCS_STATS);
         assert_eq!(
-            process_with_config(config, DOCS_STATS),
+            metrics,
             indoc! {r#"
                 # TYPE _all_total_docs_count gauge
                 _all_total_docs_count 334345728
@@ -404,6 +423,7 @@ mod tests {
                 _all_total_docs_deleted 2825688
             "#}
         );
+        assert_eq!(warns, vec!());
     }
 
     #[test]
@@ -415,8 +435,9 @@ mod tests {
               metrics:
               - path: total.docs.*
         "};
+        let (metrics, warns) = process_with_config(config, DOCS_STATS);
         assert_eq!(
-            process_with_config(config, DOCS_STATS),
+            metrics,
             indoc! {r#"
                 # TYPE total_docs_count gauge
                 total_docs_count 334345728
@@ -424,6 +445,7 @@ mod tests {
                 total_docs_deleted 2825688
             "#}
         );
+        assert_eq!(warns, vec!());
     }
 
     #[test]
@@ -436,8 +458,9 @@ mod tests {
               - name: type
                 value: $1
         "};
+        let (metrics, warns) = process_with_config(config, DOCS_STATS);
         assert_eq!(
-            process_with_config(config, DOCS_STATS),
+            metrics,
             indoc! {r#"
                 # TYPE docs_count gauge
                 docs_count{type="primaries"} 167172864
@@ -446,6 +469,41 @@ mod tests {
                 docs_count{type="total"} 334345728
                 docs_deleted{type="total"} 2825688
             "#}
+        );
+        assert_eq!(warns, vec!());
+    }
+
+    #[test]
+    fn test_invalid_placeholder() {
+        let config = indoc! {"
+            metrics:
+            - path: _all.total.docs.*
+              name: docs_${3}
+              labels:
+              - name: type
+                value: $1
+            - path: _all.primaries.docs.*
+              name: docs_${3}
+              labels:
+              - name: type
+                value: $4
+        "};
+        let (metrics, warns) = process_with_config(config, DOCS_STATS);
+        assert_eq!(
+            metrics,
+            indoc! {r#"
+                # TYPE docs_count gauge
+                docs_count{type="total"} 334345728
+                # TYPE docs_deleted gauge
+                docs_deleted{type="total"} 2825688
+            "#}
+        );
+        assert_eq!(
+            warns,
+            vec!(
+                (log::Level::Warn, "Invalid path index: 4".to_string()),
+                (log::Level::Warn, "Invalid path index: 4".to_string()),
+            )
         );
     }
 
@@ -481,13 +539,15 @@ mod tests {
               metrics:
               - path: number_of_nodes
         "};
+        let (metrics, warns) = process_with_config(config, CLUSTER_HEALTH_STATS);
         assert_eq!(
-            process_with_config(config, CLUSTER_HEALTH_STATS),
+            metrics,
             indoc! {r#"
                 # TYPE number_of_nodes gauge
                 number_of_nodes{cluster="test-cluster"} 3
             "#}
         );
+        assert_eq!(warns, vec!());
     }
 
     #[test]
@@ -496,13 +556,15 @@ mod tests {
             metrics:
             - path: timed_out
         "};
+        let (metrics, warns) = process_with_config(config, CLUSTER_HEALTH_STATS);
         assert_eq!(
-            process_with_config(config, CLUSTER_HEALTH_STATS),
+            metrics,
             indoc! {r#"
                 # TYPE timed_out gauge
                 timed_out 0
             "#}
         );
+        assert_eq!(warns, vec!());
     }
 
     #[test]
@@ -511,13 +573,15 @@ mod tests {
             metrics:
             - path: status
         "};
+        let (metrics, warns) = process_with_config(config, CLUSTER_HEALTH_STATS);
         assert_eq!(
-            process_with_config(config, CLUSTER_HEALTH_STATS),
+            metrics,
             indoc! {r#"
                 # TYPE status untyped
                 status green
             "#}
         );
+        assert_eq!(warns, vec!());
     }
 
     #[test]
@@ -527,8 +591,9 @@ mod tests {
             - active_shards
             - unassigned_shards
         "};
+        let (metrics, warns) = process_with_config(config, CLUSTER_HEALTH_STATS);
         assert_eq!(
-            process_with_config(config, CLUSTER_HEALTH_STATS),
+            metrics,
             indoc! {r#"
                 # TYPE active_shards gauge
                 active_shards 1023
@@ -536,6 +601,7 @@ mod tests {
                 unassigned_shards 0
             "#}
         );
+        assert_eq!(warns, vec!());
     }
 
     const INDICES_STATS: &'static str = r#"
@@ -637,8 +703,9 @@ mod tests {
                 - path: docs.*
                   name: docs_$1
         "};
+        let (metrics, warns) = process_with_config(config, INDICES_STATS);
         assert_eq!(
-            process_with_config(config, INDICES_STATS),
+            metrics,
             indoc! {"
               # TYPE shards_failed gauge
               shards_failed 0
@@ -658,6 +725,7 @@ mod tests {
               indices_shards_docs_deleted{index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 4
             "}
         );
+        assert_eq!(warns, vec!());
     }
 
     #[test]
@@ -682,8 +750,9 @@ mod tests {
                   type: counter
                   name: search_$1
         "};
+        let (metrics, warns) = process_with_config(config, INDICES_STATS);
         assert_eq!(
-            process_with_config(config, INDICES_STATS),
+            metrics,
             indoc! {"
               # TYPE indices_shards_search_query_time_in_millis counter
               indices_shards_search_query_time_in_millis\
@@ -705,6 +774,7 @@ mod tests {
                 {index=\"catalog\",node=\"g4x8KHe2TS2m7gxlPhwk8g\",shard=\"1\"} 9
             "}
         );
+        assert_eq!(warns, vec!());
     }
 
     #[test]
@@ -728,8 +798,9 @@ mod tests {
               "index_time_in_millis": 23.4
             }
         "#};
+        let (metrics, warns) = process_with_config(config, json);
         assert_eq!(
-            process_with_config(config, json),
+            metrics,
             indoc! {"
                 # TYPE query_time_in_seconds gauge
                 query_time_in_seconds 0.112
@@ -737,5 +808,6 @@ mod tests {
                 index_time_in_seconds 0.023399999999999997
             "}
         );
+        assert_eq!(warns, vec!());
     }
 }

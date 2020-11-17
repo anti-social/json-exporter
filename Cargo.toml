@@ -11,8 +11,10 @@ actix-web = "3"
 anyhow = "1"
 clap = "3.0.0-beta.2"
 dyn-clone = "1"
+env_logger = "0.8"
 fehler = "1"
 jsonpath = { git = "https://github.com/anti-social/jsonpath-rs", rev = "dbe736f" }
+log = "0.4"
 mimalloc = { version = "0.1", default-features = false }
 nom = { version = "6", features = ["alloc"] }
 reqwest = "0.10"

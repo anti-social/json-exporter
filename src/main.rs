@@ -15,6 +15,8 @@ use clap::Clap;
 
 use jsonpath::{Match, Step};
 
+use log;
+
 use tokio::time::delay_for;
 
 use url::Url;
@@ -104,7 +106,9 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
         let resp = data.client.get(endpoint_url).send().await?;
         let json = serde_json::from_str(&resp.text().await?)?;
 
-        endpoint.metrics.process(&data.root_metric, &json, &mut buf);
+        for (level, msg) in endpoint.metrics.process(&data.root_metric, &json, &mut buf) {
+            log::log!(level, "{}", msg);
+        }
     }
     Ok(HttpResponse::Ok()
         .content_type("text/plain; version=0.0.4")
@@ -113,6 +117,8 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
 
 #[actix_web::main]
 async fn main() -> Result<(), AnyError> {
+    env_logger::init();
+
     let opts = Opts::parse();
     let config = read_config(&opts.config)?;
     let prepared_config = PreparedConfig::create_from(&config)?;
@@ -132,8 +138,7 @@ async fn main() -> Result<(), AnyError> {
         match AppState::from_config(prepared_config, base_url).await {
             Ok(app_state) => break app_state,
             Err(e) => {
-                // TODO: log.error
-                println!("Error when preparing app state: {}", &e);
+                log::error!("Error when preparing app state: {}", &e);
                 delay_for(Duration::from_secs(30)).await;
                 continue;
             }

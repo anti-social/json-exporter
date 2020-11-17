@@ -119,7 +119,7 @@ where
     deserializer.deserialize_any(MetricsVisitor(PhantomData))
 }
 
-#[derive(Deserialize, PartialEq, Clone, Copy)]
+#[derive(Deserialize, PartialEq, Clone, Copy, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum MetricType {
     Gauge,

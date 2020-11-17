@@ -279,12 +279,11 @@ impl TemplateProcessor {
                     text.push_str(t);
                 }
                 VarIx(path_ix) => {
-                    let path_num = *path_ix as usize + 1;
-                    match found.path.get(path_num) {
+                    match found.path.get(*path_ix as usize + 1) {
                         Some(Step::Key(key)) => text.push_str(key),
                         Some(Step::Index(ix)) => text.push_str(&ix.to_string()),
                         Some(Step::Root) => throw!(anyhow!("Root element is not supported")),
-                        None => throw!(anyhow!("Invalid path index: {}", path_num)),
+                        None => throw!(anyhow!("Invalid path index: {}", path_ix)),
                     }
                 }
                 VarIdent(selector) => {

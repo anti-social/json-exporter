@@ -56,19 +56,28 @@ fn test_elasticsearch() {
             "/_cluster/health" => {
                 let es_cluster_health = serde_json::from_str(ES_CLUSTER_HEALTH)
                     .expect("es cluster health");
-                endpoint.metrics.process(&root_metric, &es_cluster_health, &mut buf);
+                assert_eq!(
+                    endpoint.metrics.process(&root_metric, &es_cluster_health, &mut buf),
+                    vec!()
+                );
                 buf.write_all(b"\n\n").unwrap();
             }
             "/_nodes/_local/stats" => {
                 let es_nodes_stats = serde_json::from_str(ES_NODES_STATS)
                     .expect("es nodes stats");
-                endpoint.metrics.process(&root_metric, &es_nodes_stats, &mut buf);
+                assert_eq!(
+                    endpoint.metrics.process(&root_metric, &es_nodes_stats, &mut buf),
+                    vec!()
+                );
                 buf.write_all(b"\n\n").unwrap();
             }
             "/_all/_stats" => {
                 let es_indices_stats = serde_json::from_str(ES_INDICES_STATS)
                     .expect("es indices stats");
-                endpoint.metrics.process(&root_metric, &es_indices_stats, &mut buf);
+                assert_eq!(
+                    endpoint.metrics.process(&root_metric, &es_indices_stats, &mut buf),
+                    vec!()
+                );
                 buf.write_all(b"\n\n").unwrap();
             }
             _ => {
