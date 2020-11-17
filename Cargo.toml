@@ -7,17 +7,21 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+actix-web = "3"
 anyhow = "1"
 clap = "3.0.0-beta.2"
+dyn-clone = "1"
 fehler = "1"
-jsonpath = { git = "https://github.com/anti-social/jsonpath-rs", rev = "8d7e139" }
+jsonpath = { git = "https://github.com/anti-social/jsonpath-rs", rev = "dbe736f" }
 mimalloc = { version = "0.1", default-features = false }
 nom = { version = "6", features = ["alloc"] }
 reqwest = "0.10"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.8"
+thiserror = "1"
 tokio = { version = "0.2", features = ["rt-core", "rt-threaded", "macros"] }
+url = "2"
 void = "1"
 
 [dev-dependencies]

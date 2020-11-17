@@ -1,11 +1,13 @@
 use anyhow::{anyhow, Error as AnyhowError};
 
+use dyn_clone::DynClone;
+
 use fehler::{throw, throws};
 
 use serde_json::{Value as JsonValue};
 use serde_yaml::{Value as YamlValue};
 
-pub trait Filter {
+pub trait Filter: DynClone {
     fn apply(&self, value: &JsonValue) -> Result<JsonValue, AnyhowError>;
 }
 
@@ -32,16 +34,17 @@ fn single_arg_f64(args: &YamlValue, map_key: &str) -> f64 {
     }
 }
 
+#[derive(Clone)]
 pub struct Multiply {
     factor: f64,
 }
 
 impl Multiply {
     #[throws(AnyhowError)]
-    pub fn create(args: &YamlValue) -> Box<dyn Filter> {
+    pub fn create(args: &YamlValue) -> Box<dyn Filter + Send> {
         Box::new(Self {
             factor: single_arg_f64(args, "factor")?
-        }) as Box<dyn Filter>
+        }) as Box<dyn Filter + Send>
     }
 }
 
@@ -57,16 +60,17 @@ impl Filter for Multiply {
     }
 }
 
+#[derive(Clone)]
 pub struct Divide {
     denominator: f64,
 }
 
 impl Divide {
     #[throws(AnyhowError)]
-    pub fn create(args: &YamlValue) -> Box<dyn Filter> {
+    pub fn create(args: &YamlValue) -> Box<dyn Filter + Send> {
         Box::new(Self {
             denominator: single_arg_f64(args, "divisor")?
-        }) as Box<dyn Filter>
+        }) as Box<dyn Filter + Send>
     }
 }
 

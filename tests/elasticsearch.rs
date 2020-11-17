@@ -4,7 +4,6 @@ use json_exporter::config::Config;
 use json_exporter::convert::ResolvedMetric;
 use json_exporter::prepare::PreparedConfig;
 
-use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::io::Write;
@@ -40,8 +39,10 @@ fn test_elasticsearch() {
                 _ => unreachable!(),
             }
         })
+        .collect::<Result<Vec<_>, _>>().expect("global labels")
+        .into_iter()
         .flatten()
-        .collect::<BTreeMap<_, _>>();
+        .collect();
 
     let root_metric = ResolvedMetric {
         metric_type: None,

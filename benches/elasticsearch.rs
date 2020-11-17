@@ -9,9 +9,8 @@ use json_exporter::prepare::PreparedConfig;
 use serde_json;
 use serde_yaml;
 
-use std::collections::BTreeMap;
 use std::fs::File;
-use std::io::{BufReader, BufRead};
+use std::io::BufReader;
 use std::io::Write;
 
 extern crate test;
@@ -51,8 +50,10 @@ fn bench_elasticsearch(b: &mut Bencher) {
                 _ => unreachable!(),
             }
         })
+        .collect::<Result<Vec<_>, _>>().expect("global labels")
+        .into_iter()
         .flatten()
-        .collect::<BTreeMap<_, _>>();
+        .collect();
 
     let root_metric = ResolvedMetric {
         metric_type: None,

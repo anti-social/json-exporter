@@ -1,3 +1,7 @@
+use anyhow::{Error as AnyhowError};
+
+use fehler::throws;
+
 use jsonpath::{Match, Step};
 
 use serde_json::Value;
@@ -38,7 +42,8 @@ impl PreparedMetrics {
                             .flat_map(|(parent_json, parent_metric)| {
                                 metric.selector.find(parent_json)
                                     .filter_map(|v| {
-                                        metric.resolve(&v).map(|m| (v.value, m))
+                                        // TODO: log error
+                                        metric.resolve(&v).ok().map(|m| (v.value, m))
                                     })
                                     .map(move |(v, m)| {
                                         (v, m.merge_with_parent(&parent_metric))
@@ -48,7 +53,8 @@ impl PreparedMetrics {
                     } else {
                         metric.selector.find(json)
                             .filter_map(|v| {
-                                metric.resolve(&v).map(|m| (v.value, m))
+                                // TODO: log error
+                                metric.resolve(&v).ok().map(|m| (v.value, m))
                             })
                             .map(move |(v, m)| {
                                 (v, m.merge_with_parent(root_metric))
@@ -117,19 +123,20 @@ impl PreparedMetrics {
 }
 
 impl PreparedLabels {
+    #[throws(AnyhowError)]
     pub fn resolve(&self, found: &Match) -> BTreeMap<String, String> {
         let mut labels = BTreeMap::new();
         for label in &self.labels {
-            if let Some(label_value) = (label.value_processor)(found) {
-                // Escape label values here so we shouldn't escape them when dumping
-                let safe_value = match self.should_escape_label_value(&label_value) {
-                    0 => label_value,
-                    num_escapes => self.escape_label_value(&label_value, num_escapes),
-                };
-                labels.insert(
-                    label.name.clone(), safe_value
-                );
-            }
+            let label_value = label.value_processor.apply(found)?;
+            // Escape label values here so we shouldn't escape them every time
+            // when dumping
+            let safe_value = match self.should_escape_label_value(&label_value) {
+                0 => label_value,
+                num_escapes => self.escape_label_value(&label_value, num_escapes),
+            };
+            labels.insert(
+                label.name.clone(), safe_value
+            );
         }
         labels
     }
@@ -159,14 +166,11 @@ impl PreparedLabels {
 }
 
 impl PreparedMetric {
-    fn resolve(&self, found: &Match) -> Option<ResolvedMetric> {
+    #[throws(AnyhowError)]
+    fn resolve(&self, found: &Match) -> ResolvedMetric {
         let name = match &self.name_processor {
             Some(name_processor) => {
-                if let Some(metric_name) = name_processor(found) {
-                    metric_name
-                } else {
-                    return None;
-                }
+                name_processor.apply(found)?
             }
             None => {
                 let mut metric_name = String::new();
@@ -188,15 +192,15 @@ impl PreparedMetric {
             }
         };
 
-        Some(ResolvedMetric {
+        ResolvedMetric {
             name,
             metric_type: self.metric_type,
-            labels: self.labels.resolve(found),
-        })
+            labels: self.labels.resolve(found)?,
+        }
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct ResolvedMetric {
     pub name: String,
     pub metric_type: Option<MetricType>,
