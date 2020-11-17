@@ -13,7 +13,13 @@ use anyhow::{bail, Context, Error as AnyError};
 
 use clap::Clap;
 
+use json_exporter::read_config;
+use json_exporter::prepare::PreparedConfig;
+use json_exporter::convert::ResolvedMetric;
+
 use jsonpath::{Match, Step};
+
+use mimalloc::MiMalloc;
 
 use tokio::time::delay_for;
 
@@ -24,9 +30,8 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use json_exporter::read_config;
-use json_exporter::prepare::PreparedConfig;
-use json_exporter::convert::ResolvedMetric;
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 #[derive(Clap, Debug)]
 struct Opts {
