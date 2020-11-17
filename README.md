@@ -20,3 +20,11 @@ Run it:
 ```shell script
 ./json-exporter --base-url http://localhost:9200 elasticsearch_exporter.yaml
 ```
+
+Check it opening in your browser: http://localhost:9114/metrics
+
+You can set log level via `RUST_LOG` environment variable:
+
+```shell script
+RUST_LOG=info ./json-exporter --base-url http://localhost:9200 elasticsearch_exporter.yaml
+``` 
