@@ -15,8 +15,6 @@ use clap::Clap;
 
 use jsonpath::{Match, Step};
 
-use log;
-
 use tokio::time::delay_for;
 
 use url::Url;
@@ -65,7 +63,7 @@ impl AppState {
 
         let root_metric = ResolvedMetric {
             metric_type: None,
-            name: config.namespace.clone().unwrap_or("".to_string()),
+            name: config.namespace.clone().unwrap_or_else(|| "".to_string()),
             labels: global_labels,
         };
 

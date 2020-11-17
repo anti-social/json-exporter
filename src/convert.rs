@@ -18,16 +18,18 @@ use crate::prepare::{
     PreparedMetrics,
 };
 
+type Stack<'a> = Vec<
+    (
+        std::slice::Iter<'a, PreparedMetric>,
+        Option<Vec<(&'a Value, ResolvedMetric)>>
+    )
+>;
+
 impl PreparedMetrics {
     pub fn process(
         &self, root_metric: &ResolvedMetric, json: &Value, buf: &mut Vec<u8>
     ) -> Vec<(log::Level, String)> {
-        let mut stack: Vec<
-            (
-                std::slice::Iter<PreparedMetric>,
-                Option<Vec<(&Value, ResolvedMetric)>>
-            )
-        > = vec!();
+        let mut stack: Stack = vec!();
         stack.push((self.iter(), None));
         let mut seen_metrics = HashMap::new();
         let mut warnings = vec!();
@@ -237,7 +239,7 @@ impl ResolvedMetric {
         };
         for (parent_label_name, parent_label_value) in parent.labels.iter() {
             self.labels.entry(parent_label_name.clone())
-                .or_insert(parent_label_value.clone());
+                .or_insert_with(|| parent_label_value.clone());
         }
         self
     }

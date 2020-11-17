@@ -17,7 +17,7 @@ fn single_arg_f64(args: &YamlValue, map_key: &str) -> f64 {
         YamlValue::Number(f) => f.as_f64().unwrap(),
         YamlValue::Sequence(seq) => {
             match seq.as_slice() {
-                &[YamlValue::Number(ref f)] => f.as_f64().unwrap(),
+                [YamlValue::Number(ref f)] => f.as_f64().unwrap(),
                 _ => throw!(anyhow!("Invalid argument: {:?}", args)),
             }
         }

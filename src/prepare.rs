@@ -131,7 +131,7 @@ pub struct PreparedMetrics(pub Vec<PreparedMetric>);
 impl PreparedMetrics {
     #[throws(AnyhowError)]
     pub fn create_from(
-        metrics: &Vec<Metric>,
+        metrics: &[Metric],
         metric_type: Option<MetricType>
     ) -> Self {
         let mut prepared_metrics = vec!();
@@ -190,7 +190,7 @@ impl Clone for PreparedMetric {
     fn clone(&self) -> Self {
         Self {
             selector: self.selector.clone(),
-            metric_type: self.metric_type.clone(),
+            metric_type: self.metric_type,
             name: self.name.clone(),
             name_processor: self.name_processor.clone(),
             filters: self.filters.iter()
@@ -289,15 +289,14 @@ impl TemplateProcessor {
                 VarIdent(selector) => {
                     // TODO: Should we return an error when there are several
                     // matching values?
-                    selector.find(found.value)
-                        .next()
-                        .map(|found_value| found_value.value)
-                        .map(|v| match v {
+                    if let Some(v) = selector.find(found.value).next() {
+                        match v.value {
                             Value::String(v) => text.push_str(&v),
                             Value::Bool(v) => text.push_str(&v.to_string()),
                             Value::Number(v) => text.push_str(&v.to_string()),
-                            _ => {},
-                        });
+                            _ => {}
+                        }
+                    }
                 }
             }
         }
