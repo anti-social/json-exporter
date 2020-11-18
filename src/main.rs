@@ -103,8 +103,7 @@ impl AppState {
 
         let mut global_labels = BTreeMap::new();
         for global_label in config.global_labels.iter() {
-            let labels_url = base_url.join(&global_label.url)?;
-            let labels_resp = client.get(labels_url).send().await?;
+            let labels_resp = client.get(global_label.url.clone()).send().await?;
             let labels_json = serde_json::from_str(&labels_resp.text().await?)?;
             let labels_root_match = Match {
                 value: &labels_json,
@@ -141,6 +140,8 @@ pub enum ProcessMetricsError {
     Json(#[from] serde_json::Error),
     #[error("error when join future: {0}")]
     Join(#[from] tokio::task::JoinError),
+    #[error("io error: {0}")]
+    IO(#[from] std::io::Error),
 }
 
 impl ResponseError for ProcessMetricsError {
@@ -164,29 +165,26 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
     };
 
     // TODO: limit fetching concurrency
-    let mut resp_futures = vec!();
-    for endpoint in data.config.endpoints.iter() {
-        // TODO: make Url when preparing a config
-        let endpoint_url = data.base_url.join(&endpoint.url)?;
-        let client = data.client.clone();
-        let fut = tokio::spawn(async move {
-            fetch_text_content(&client, endpoint_url).await
-        });
-        resp_futures.push(fut);
-    }
-    let mut responses = vec!();
-    let start_requests = Instant::now();
-    for resp_fut in resp_futures.iter_mut() {
-        responses.push(resp_fut.await??);
-    }
-    requests_duration += start_requests.elapsed();
+    let mut resp_futures = data.config.endpoints.iter()
+        .map(|endpoint| {
+            let endpoint_url = endpoint.url.clone();
+            let client = data.client.clone();
+            tokio::spawn(async move {
+                fetch_text_content(&client, endpoint_url).await
+            })
+        })
+        .collect::<Vec<_>>();
 
     let mut buf = Vec::with_capacity(buf_size);
     {
         let mut writer = GzEncoder::new(&mut buf, Compression::default());
-        for (endpoint, resp_text) in data.config.endpoints.iter().zip(responses.iter()) {
+        for (endpoint, resp_fut) in data.config.endpoints.iter().zip(resp_futures.iter_mut()) {
+            let start_requests = Instant::now();
+            let text_resp = resp_fut.await??;
+            requests_duration += start_requests.elapsed();
+
             let start_parsing = Instant::now();
-            let json = serde_json::from_str(&resp_text)?;
+            let json = serde_json::from_str(&text_resp)?;
             json_parsing_duration += start_parsing.elapsed();
 
             let start_processing = Instant::now();
@@ -195,7 +193,7 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
             }
             processing_duration += start_processing.elapsed();
         }
-        writer.finish().unwrap();
+        writer.finish()?;
     }
 
     log::info!(
@@ -230,11 +228,11 @@ async fn main() -> Result<(), AnyError> {
     env_logger::init();
 
     let opts = Opts::parse();
-    let config = read_config(&opts.config)?;
-    let prepared_config = PreparedConfig::create_from(&config)?;
-
     let base_url = Url::parse(&opts.base_url)
         .with_context(|| format!("Invalid url: {}", &opts.base_url))?;
+    let config = read_config(&opts.config)?;
+    let prepared_config = PreparedConfig::create_from(&config, &base_url)?;
+
     if base_url.query().is_some() || base_url.fragment().is_some() {
         bail!(
             "Base url must not contain query or fragment parts: {}", &base_url

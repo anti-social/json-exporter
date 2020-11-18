@@ -9,6 +9,8 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::str::FromStr;
 
+use url::Url;
+
 use void::Void;
 
 use crate::prepare::PreparedConfig;
@@ -23,8 +25,8 @@ pub struct Config {
 
 impl Config {
     #[throws(AnyhowError)]
-    pub fn prepare(&self) -> PreparedConfig {
-        PreparedConfig::create_from(self)?
+    pub fn prepare(&self, base_url: &Url) -> PreparedConfig {
+        PreparedConfig::create_from(self, base_url)?
     }
 }
 

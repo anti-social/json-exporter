@@ -6,6 +6,8 @@ use json_exporter::config::Config;
 use json_exporter::convert::ResolvedMetric;
 use json_exporter::prepare::PreparedConfig;
 
+use mimalloc::MiMalloc;
+
 use serde_json;
 use serde_yaml;
 
@@ -16,7 +18,7 @@ use std::io::Write;
 extern crate test;
 use test::Bencher;
 
-use mimalloc::MiMalloc;
+use url::Url;
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -29,13 +31,14 @@ const ES_INDICES_STATS: &'static str = "benches/es_indices_stats.json";
 
 #[bench]
 fn bench_elasticsearch(b: &mut Bencher) {
+    let es_url = Url::parse("http://example.com:9200").expect("es url");
     let es_config_filename = "elasticsearch_exporter.yaml";
     let es_config_file = BufReader::new(
         File::open(es_config_filename).expect(es_config_filename)
     );
     let config: Config = serde_yaml::from_reader(es_config_file)
         .expect("es config");
-    let prepared_config = PreparedConfig::create_from(&config)
+    let prepared_config = PreparedConfig::create_from(&config, &es_url)
         .expect("prepare es config");
 
     let es_info = read_json(ES_INFO);

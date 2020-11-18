@@ -8,6 +8,8 @@ use serde_json::Value;
 
 use std::convert::TryFrom;
 
+use url::Url;
+
 use crate::config::{
     Config,
     Endpoint,
@@ -37,14 +39,14 @@ pub struct PreparedConfig {
 
 impl PreparedConfig {
     #[throws(AnyhowError)]
-    pub fn create_from(config: &Config) -> Self {
+    pub fn create_from(config: &Config, base_url: &Url) -> Self {
         let mut prepared_global_labels = vec!();
         for global_labels in &config.global_labels {
-            prepared_global_labels.push(PreparedGlobalLabels::try_from(global_labels)?);
+            prepared_global_labels.push(PreparedGlobalLabels::create_from(global_labels, base_url)?);
         }
         let mut prepared_endpoints = vec!();
         for endpoint in &config.endpoints {
-            prepared_endpoints.push(PreparedEndpoint::create_from(endpoint)?);
+            prepared_endpoints.push(PreparedEndpoint::create_from(endpoint, base_url)?);
         }
         Self {
             namespace: config.namespace.clone(),
@@ -56,17 +58,15 @@ impl PreparedConfig {
 
 #[derive(Clone)]
 pub struct PreparedGlobalLabels {
-    pub url: String,
+    pub url: Url,
     pub labels: PreparedLabels,
 }
 
-impl<'a> TryFrom<&'a GlobalLabels> for PreparedGlobalLabels {
-    type Error = AnyhowError;
-
-    #[throws(Self::Error)]
-    fn try_from(global_labels: &GlobalLabels) -> Self {
+impl PreparedGlobalLabels {
+    #[throws(AnyhowError)]
+    fn create_from(global_labels: &GlobalLabels, base_url: &Url) -> Self {
         Self {
-            url: global_labels.url.clone(),
+            url: base_url.join(&global_labels.url)?,
             labels: PreparedLabels::try_from(&global_labels.labels)?,
         }
     }
@@ -111,15 +111,15 @@ impl<'a> TryFrom<&'a Vec<Label>> for PreparedLabels {
 
 #[derive(Clone)]
 pub struct PreparedEndpoint {
-    pub url: String,
+    pub url: Url,
     pub metrics: PreparedMetrics,
 }
 
 impl PreparedEndpoint {
     #[throws(AnyhowError)]
-    fn create_from(endpoint: &Endpoint) -> Self {
+    fn create_from(endpoint: &Endpoint, base_url: &Url) -> Self {
         Self {
-            url: endpoint.url.clone(),
+            url: base_url.join(&endpoint.url)?,
             metrics: PreparedMetrics::create_from(&endpoint.metrics, None)?
         }
     }
@@ -326,5 +326,19 @@ impl PreparedPlaceholder {
                 PreparedPlaceholder::VarIdent(selector)
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use url::Url;
+
+    #[test]
+    fn test_url() {
+        let base_url = Url::parse("http://localhost/metrics/").unwrap();
+        let path = "/stats?b=2";
+        println!("{}", base_url.join(path).unwrap());
+
+        // assert!(false);
     }
 }
