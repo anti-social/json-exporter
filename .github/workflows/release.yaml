@@ -37,7 +37,8 @@ jobs:
         ARCHIVE_NAME=json-exporter-$VERSION-$OS-$ARCH.tar.gz
         DIST_DIR=dist
         mkdir $DIST_DIR
-        tar -czf $DIST_DIR/$ARCHIVE_NAME target/release/json-exporter
+        ARCHIVE_PATH=$DIST_DIR/$ARCHIVE_NAME
+        tar -czf $ARCHIVE_PATH --directory target/release json-exporter
         cp elasticsearch_exporter.yaml $DIST_DIR
         echo "::set-output name=version::$VERSION"
         echo "::set-output name=archive_name::$ARCHIVE_NAME"
