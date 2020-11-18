@@ -21,17 +21,20 @@ use jsonpath::{Match, Step};
 
 use mimalloc::MiMalloc;
 
-use tokio::time::delay_for;
-
-use url::Url;
-
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use tokio::time::delay_for;
+use tokio::sync::{Mutex as AsyncMutex};
+
+use url::Url;
+
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
+
+const DEFAULT_BUF_SIZE: usize = 1 << 14; // 16Kb
 
 #[derive(Clap, Debug)]
 struct Opts {
@@ -50,6 +53,44 @@ struct AppState {
     client: reqwest::Client,
     config: PreparedConfig,
     root_metric: ResolvedMetric,
+    buf_size: Arc<AsyncMutex<BufSize>>,
+}
+
+struct BufSize {
+    last_sizes: [usize; 10],
+    ix: usize,
+    current_size: usize,
+}
+
+impl BufSize {
+    pub fn new() -> Self {
+        Self {
+            last_sizes: [DEFAULT_BUF_SIZE; 10],
+            ix: 0,
+            current_size: DEFAULT_BUF_SIZE,
+        }
+    }
+
+    pub fn buf_size(&self) -> usize {
+        self.current_size
+    }
+
+    pub fn seen(&mut self, buf_size: usize) -> bool {
+        let ix = self.ix;
+        self.last_sizes[ix] = buf_size;
+        if ix < self.last_sizes.len() - 1 {
+            self.ix += 1;
+        } else {
+            self.ix = 0;
+        }
+        let max_size = *self.last_sizes.iter().max()
+            .unwrap_or(&DEFAULT_BUF_SIZE);
+        if self.current_size != max_size {
+            self.current_size = max_size;
+            return true;
+        }
+        false
+    }
 }
 
 impl AppState {
@@ -81,6 +122,7 @@ impl AppState {
             client,
             config,
             root_metric,
+            buf_size: Arc::new(AsyncMutex::new(BufSize::new())),
         })
     }
 }
@@ -110,7 +152,12 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
     let mut json_parsing_duration = Duration::default();
     let mut processing_duration = Duration::default();
 
-    let mut buf = vec!();
+    let buf_size = {
+        let buf_size = data.buf_size.lock().await;
+        buf_size.buf_size()
+    };
+
+    let mut buf = Vec::with_capacity(buf_size);
     for endpoint in &data.config.endpoints {
         // TODO: make Url when preparing a config
         let endpoint_url = data.base_url.join(&endpoint.url)?;
@@ -137,6 +184,11 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
         json_parsing_duration.as_millis(),
         processing_duration.as_millis(),
     );
+
+    let mut buf_size = data.buf_size.lock().await;
+    if buf_size.seen(buf.capacity()) {
+        log::info!("Set new buffer size: {}", buf_size.buf_size());
+    }
 
     Ok(HttpResponse::Ok()
         .content_type("text/plain; version=0.0.4")
