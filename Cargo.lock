@@ -1090,6 +1090,7 @@ dependencies = [
  "dyn-clone",
  "env_logger",
  "fehler",
+ "flate2",
  "indoc",
  "jsonpath",
  "log",

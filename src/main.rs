@@ -1,6 +1,5 @@
 use actix_web::{
     http,
-    middleware,
     web,
     App,
     HttpResponse,
@@ -13,6 +12,9 @@ use actix_web::dev::HttpResponseBuilder;
 use anyhow::{bail, Context, Error as AnyError};
 
 use clap::Clap;
+
+use flate2::Compression;
+use flate2::write::GzEncoder;
 
 use json_exporter::read_config;
 use json_exporter::prepare::PreparedConfig;
@@ -31,6 +33,7 @@ use tokio::time::delay_for;
 use tokio::sync::{Mutex as AsyncMutex};
 
 use url::Url;
+use actix_web::http::{header, ContentEncoding};
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -159,24 +162,28 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
     };
 
     let mut buf = Vec::with_capacity(buf_size);
-    for endpoint in &data.config.endpoints {
-        // TODO: make Url when preparing a config
-        let endpoint_url = data.base_url.join(&endpoint.url)?;
+    {
+        let mut writer = GzEncoder::new(&mut buf, Compression::default());
+        for endpoint in &data.config.endpoints {
+            // TODO: make Url when preparing a config
+            let endpoint_url = data.base_url.join(&endpoint.url)?;
 
-        let start_request = Instant::now();
-        let resp = data.client.get(endpoint_url).send().await?;
-        let text = resp.text().await?;
-        request_duration += start_request.elapsed();
+            let start_request = Instant::now();
+            let resp = data.client.get(endpoint_url).send().await?;
+            let text = resp.text().await?;
+            request_duration += start_request.elapsed();
 
-        let start_parsing = Instant::now();
-        let json = serde_json::from_str(&text)?;
-        json_parsing_duration += start_parsing.elapsed();
+            let start_parsing = Instant::now();
+            let json = serde_json::from_str(&text)?;
+            json_parsing_duration += start_parsing.elapsed();
 
-        let start_processing = Instant::now();
-        for (level, msg) in endpoint.metrics.process(&data.root_metric, &json, &mut buf) {
-            log::log!(level, "{}", msg);
+            let start_processing = Instant::now();
+            for (level, msg) in endpoint.metrics.process(&data.root_metric, &json, &mut writer) {
+                log::log!(level, "{}", msg);
+            }
+            processing_duration += start_processing.elapsed();
         }
-        processing_duration += start_processing.elapsed();
+        writer.finish().unwrap();
     }
 
     log::info!(
@@ -191,9 +198,12 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
         log::info!("Set new buffer size: {}", buf_size.buf_size());
     }
 
-    Ok(HttpResponse::Ok()
-        .content_type("text/plain; version=0.0.4")
-        .body(buf))
+    Ok(
+        HttpResponse::Ok()
+            .content_type("text/plain; version=0.0.4")
+            .header(header::CONTENT_ENCODING, ContentEncoding::Gzip.as_str())
+            .body(buf)
+    )
 }
 
 #[actix_web::main]
@@ -231,7 +241,7 @@ async fn main() -> Result<(), AnyError> {
         // println!("Creating http application");
         let app_state = app_state.lock().expect("app state mutex lock");
         App::new()
-            .wrap(middleware::Compress::default())
+            // .wrap(middleware::Compress::default())
             .data((*app_state).clone())
             .route("/metrics", web::get().to(metrics))
     })

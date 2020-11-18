@@ -26,8 +26,8 @@ type Stack<'a> = Vec<
 >;
 
 impl PreparedMetrics {
-    pub fn process(
-        &self, root_metric: &ResolvedMetric, json: &Value, buf: &mut Vec<u8>
+    pub fn process<W: IOWrite>(
+        &self, root_metric: &ResolvedMetric, json: &Value, buf: &mut W
     ) -> Vec<(log::Level, String)> {
         let mut stack: Stack = vec!();
         stack.push((self.iter(), None));
@@ -244,11 +244,11 @@ impl ResolvedMetric {
         self
     }
 
-    fn dump(
+    fn dump<W: IOWrite>(
         &self,
         value: &Value,
         seen_metric_type: Option<MetricType>,
-        buf: &mut Vec<u8>
+        buf: &mut W,
     ) -> Option<MetricType> {
         // See: https://prometheus.io/docs/instrumenting/exposition_formats/#comments-help-text-and-type-information
 
@@ -276,41 +276,47 @@ impl ResolvedMetric {
         }
 
         if seen_metric_type.is_none() {
-            buf.extend(b"# TYPE ");
-            buf.extend(self.name.as_bytes());
+            buf.write(b"# TYPE ").ok();
+            buf.write(self.name.as_bytes()).ok();
             match metric_type {
-                Gauge => buf.extend(b" gauge\n"),
-                Counter => buf.extend(b" counter\n"),
-                Untyped => buf.extend(b" untyped\n"),
+                Gauge => {
+                    buf.write(b" gauge\n").ok();
+                }
+                Counter => {
+                    buf.write(b" counter\n").ok();
+                }
+                Untyped => {
+                    buf.write(b" untyped\n").ok();
+                }
             }
         }
         self.dump_metric(buf);
-        buf.push(b' ');
+        buf.write(b" ").ok();
         self.dump_value(value, buf);
-        buf.push(b'\n');
+        buf.write(b"\n").ok();
         Some(metric_type)
     }
 
-    fn dump_metric(&self, buf: &mut Vec<u8>) {
-        buf.extend(self.name.as_bytes());
+    fn dump_metric<W: IOWrite>(&self, buf: &mut W) {
+        buf.write(self.name.as_bytes()).ok();
         if !self.labels.is_empty() {
-            buf.push(b'{');
+            buf.write(b"{").ok();
             for (label_ix, (label_name, label_value)) in self.labels.iter().enumerate() {
                 if label_ix > 0 {
-                    buf.push(b',');
+                    buf.write(b",").ok();
                 }
-                buf.extend(label_name.as_bytes());
-                buf.push(b'=');
+                buf.write(label_name.as_bytes()).ok();
+                buf.write(b"=").ok();
                 self.dump_label_value(label_value, buf);
             }
-            buf.push(b'}');
+            buf.write(b"}").ok();
         }
     }
 
-    fn dump_label_value(&self, value: &str, buf: &mut Vec<u8>) {
-        buf.push(b'"');
-        buf.extend(value.as_bytes());
-        buf.push(b'"');
+    fn dump_label_value<W: IOWrite>(&self, value: &str, buf: &mut W) {
+        buf.write(b"\"").ok();
+        buf.write(value.as_bytes()).ok();
+        buf.write(b"\"").ok();
     }
 
     fn check_value(&self, value: &Value, metric_type: MetricType) -> bool {
@@ -334,21 +340,21 @@ impl ResolvedMetric {
         }
     }
 
-    fn dump_value(
-        &self, value: &Value, buf: &mut Vec<u8>
+    fn dump_value<W: IOWrite>(
+        &self, value: &Value, buf: &mut W
     ) {
         match value {
             Value::Number(v) => {
                 write!(buf, "{}", v).ok();
             }
             Value::Bool(v) if *v => {
-                buf.push(b'1')
+                buf.write(b"1").ok();
             }
             Value::Bool(_) => {
-                buf.push(b'0')
+                buf.write(b"0").ok();
             }
             Value::String(v) => {
-                buf.extend(v.as_bytes());
+                buf.write(v.as_bytes()).ok();
             }
             _ => {
                 unreachable!()
