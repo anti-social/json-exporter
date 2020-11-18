@@ -1,5 +1,6 @@
 use actix_web::{
     http,
+    middleware,
     web,
     App,
     HttpResponse,
@@ -230,6 +231,7 @@ async fn main() -> Result<(), AnyError> {
         // println!("Creating http application");
         let app_state = app_state.lock().expect("app state mutex lock");
         App::new()
+            .wrap(middleware::Compress::default())
             .data((*app_state).clone())
             .route("/metrics", web::get().to(metrics))
     })
