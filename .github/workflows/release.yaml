@@ -7,7 +7,7 @@ name: Create Release
 jobs:
   release:
     name: Create release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - name: Checkout sources
       uses: actions/checkout@v2
@@ -32,9 +32,16 @@ jobs:
         if [[ $GITHUB_REF == refs/tags/v* ]]; then
           VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\/v\(.*\)/\1/')
         fi
-        ARCHIVE_NAME=json-exporter-$VERSION.tar.gz
-        tar -czf $ARCHIVE_NAME target/release/json-exporter
+        OS=linux
+        ARCH=amd64
+        ARCHIVE_NAME=json-exporter-$VERSION-$OS-$ARCH.tar.gz
+        DIST_DIR=dist
+        mkdir $DIST_DIR
+        tar -czf $DIST_DIR/$ARCHIVE_NAME target/release/json-exporter
+        cp elasticsearch_exporter.yaml $DIST_DIR
+        echo "::set-output name=version::$VERSION"
         echo "::set-output name=archive_name::$ARCHIVE_NAME"
+        echo "::set-output name=archive_path::$ARCHIVE_PATH"
 
     - name: Create Release
       id: create_release
@@ -54,6 +61,30 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ format('./{0}', steps.create_archive.outputs.archive_name) }}
+        asset_path: ./${{ steps.create_archive.outputs.archive_path }}
         asset_name: ${{ steps.create_archive.outputs.archive_name }}
         asset_content_type: application/gzip
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build and push
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        file: ./Dockerfile.release
+        build-args: |
+            version=${{ steps.create_archive.outputs.version }}
+        push: true
+        tags: kovalidis/json-exporter:${{ steps.create_archive.outputs.version }}
+
+    - name: Image digest
+      run: echo ${{ steps.docker_build.outputs.digest }}

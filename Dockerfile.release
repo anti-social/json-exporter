@@ -1,0 +1,15 @@
+FROM ubuntu:focal
+
+ARG version
+
+RUN \
+  apt -y update && \
+  apt -y install libssl1.1 && \
+  rm -rf /var/lib/apt/lists/*
+
+COPY elasticsearch_exporter.yaml /app/config/elasticsearch_exporter.yaml
+COPY json-exporter-${version}-linux-amd64.tar.gz /tmp/json-exporter.tar.gz
+RUN \
+  mkdir -p /app/bin && \
+  tar -xzf /tmp/json-exporter.tar.gz --directory /app/bin && \
+  rm /tmp/json-exporter.tar.gz
