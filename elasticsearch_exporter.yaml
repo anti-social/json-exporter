@@ -4,10 +4,10 @@ _defaults:
   cluster_health: &cluster-health /_cluster/health
 
   # To collect stats from all nodes use: /_nodes/stats
-  nodes_stats: &nodes-stats /_nodes/_local/stats
+  nodes_stats: &nodes-stats /_nodes/_local/stats?groups=_all
 
-  # To collect shard stats use: /_all/_stats?level=shards
-  indices_stats: &indices-stats /_all/_stats
+  # To collect shard stats add: ?level=shards
+  indices_stats: &indices-stats /_all/_stats?groups=_all
 
   ms_to_secs: &ms-to-secs
     name: mul
@@ -164,7 +164,7 @@ endpoints:
         - path: total
           type: counter
       - path: search
-        metrics:
+        metrics: &nodes-search-metrics
         - open_contexts
         - path: query_time_in_millis
           name: query_time_seconds
@@ -190,6 +190,12 @@ endpoints:
           modifiers: [*ms-to-secs]
         - path: scroll_total
           type: counter
+      - path: search.groups.*
+        name: search_groups
+        labels:
+        - name: group
+          value: $2
+        metrics: *nodes-search-metrics
       - path: docs
         metrics:
         - path: count
@@ -521,7 +527,7 @@ endpoints:
       name: index_stats
       metrics:
       - path: search
-        metrics:
+        metrics: &indices-search-metrics
         - open_contexts
         - path: query_time_in_millis
           name: query_time_seconds_total
@@ -548,6 +554,12 @@ endpoints:
           modifiers: [*ms-to-secs]
         - path: suggest_total
           type: counter
+      - path: search.groups.*
+        name: search_groups
+        labels:
+        - name: group
+          value: $2
+        metrics: *indices-search-metrics
       - path: indexing
         type: counter
         metrics:
