@@ -65,7 +65,7 @@ fn test_elasticsearch() {
                 );
                 buf.write_all(b"\n\n").unwrap();
             }
-            "http://example.com:9200/_nodes/_local/stats" => {
+            "http://example.com:9200/_nodes/_local/stats?groups=_all" => {
                 let es_nodes_stats = serde_json::from_str(ES_NODES_STATS)
                     .expect("es nodes stats");
                 assert_eq!(
@@ -74,7 +74,7 @@ fn test_elasticsearch() {
                 );
                 buf.write_all(b"\n\n").unwrap();
             }
-            "http://example.com:9200/_all/_stats" => {
+            "http://example.com:9200/_all/_stats?groups=_all" => {
                 let es_indices_stats = serde_json::from_str(ES_INDICES_STATS)
                     .expect("es indices stats");
                 assert_eq!(
