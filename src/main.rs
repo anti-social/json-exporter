@@ -139,6 +139,8 @@ pub enum ProcessMetricsError {
     Reqwest(#[from] reqwest::Error),
     #[error("invalid json: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("error when join future: {0}")]
+    Join(#[from] tokio::task::JoinError),
 }
 
 impl ResponseError for ProcessMetricsError {
@@ -152,7 +154,7 @@ impl ResponseError for ProcessMetricsError {
 }
 
 async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMetricsError> {
-    let mut request_duration = Duration::default();
+    let mut requests_duration = Duration::default();
     let mut json_parsing_duration = Duration::default();
     let mut processing_duration = Duration::default();
 
@@ -161,20 +163,30 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
         buf_size.buf_size()
     };
 
+    // TODO: limit fetching concurrency
+    let mut resp_futures = vec!();
+    for endpoint in data.config.endpoints.iter() {
+        // TODO: make Url when preparing a config
+        let endpoint_url = data.base_url.join(&endpoint.url)?;
+        let client = data.client.clone();
+        let fut = tokio::spawn(async move {
+            fetch_text_content(&client, endpoint_url).await
+        });
+        resp_futures.push(fut);
+    }
+    let mut responses = vec!();
+    let start_requests = Instant::now();
+    for resp_fut in resp_futures.iter_mut() {
+        responses.push(resp_fut.await??);
+    }
+    requests_duration += start_requests.elapsed();
+
     let mut buf = Vec::with_capacity(buf_size);
     {
         let mut writer = GzEncoder::new(&mut buf, Compression::default());
-        for endpoint in &data.config.endpoints {
-            // TODO: make Url when preparing a config
-            let endpoint_url = data.base_url.join(&endpoint.url)?;
-
-            let start_request = Instant::now();
-            let resp = data.client.get(endpoint_url).send().await?;
-            let text = resp.text().await?;
-            request_duration += start_request.elapsed();
-
+        for (endpoint, resp_text) in data.config.endpoints.iter().zip(responses.iter()) {
             let start_parsing = Instant::now();
-            let json = serde_json::from_str(&text)?;
+            let json = serde_json::from_str(&resp_text)?;
             json_parsing_duration += start_parsing.elapsed();
 
             let start_processing = Instant::now();
@@ -187,8 +199,8 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
     }
 
     log::info!(
-        "Timings: request={}ms, parsing={}ms, processing={}ms",
-        request_duration.as_millis(),
+        "Timings: requests={}ms, parsing={}ms, processing={}ms",
+        requests_duration.as_millis(),
         json_parsing_duration.as_millis(),
         processing_duration.as_millis(),
     );
@@ -204,6 +216,13 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
             .header(header::CONTENT_ENCODING, ContentEncoding::Gzip.as_str())
             .body(buf)
     )
+}
+
+async fn fetch_text_content(
+    client: &reqwest::Client, url: Url
+) -> Result<String, reqwest::Error> {
+    client.get(url).send().await?
+        .text().await
 }
 
 #[actix_web::main]
