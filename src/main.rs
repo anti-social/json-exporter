@@ -28,7 +28,7 @@ use url::Url;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -106,17 +106,38 @@ impl ResponseError for ProcessMetricsError {
 }
 
 async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMetricsError> {
+    let mut request_duration = Duration::default();
+    let mut json_parsing_duration = Duration::default();
+    let mut processing_duration = Duration::default();
+
     let mut buf = vec!();
     for endpoint in &data.config.endpoints {
         // TODO: make Url when preparing a config
         let endpoint_url = data.base_url.join(&endpoint.url)?;
-        let resp = data.client.get(endpoint_url).send().await?;
-        let json = serde_json::from_str(&resp.text().await?)?;
 
+        let start_request = Instant::now();
+        let resp = data.client.get(endpoint_url).send().await?;
+        let text = resp.text().await?;
+        request_duration += start_request.elapsed();
+
+        let start_parsing = Instant::now();
+        let json = serde_json::from_str(&text)?;
+        json_parsing_duration += start_parsing.elapsed();
+
+        let start_processing = Instant::now();
         for (level, msg) in endpoint.metrics.process(&data.root_metric, &json, &mut buf) {
             log::log!(level, "{}", msg);
         }
+        processing_duration += start_processing.elapsed();
     }
+
+    log::info!(
+        "Timings: request={}ms, parsing={}ms, processing={}ms",
+        request_duration.as_millis(),
+        json_parsing_duration.as_millis(),
+        processing_duration.as_millis(),
+    );
+
     Ok(HttpResponse::Ok()
         .content_type("text/plain; version=0.0.4")
         .body(buf))
