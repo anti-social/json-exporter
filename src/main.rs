@@ -29,7 +29,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use tokio::time::delay_for;
+use tokio::time::{delay_for, timeout_at};
 use tokio::sync::{Mutex as AsyncMutex};
 
 use url::Url;
@@ -39,6 +39,7 @@ use actix_web::http::{header, ContentEncoding};
 static GLOBAL: MiMalloc = MiMalloc;
 
 const DEFAULT_BUF_SIZE: usize = 1 << 14; // 16Kb
+const GLOBAL_LABELS_RETRY_INTERVAL_SECS: u64 = 30;
 
 #[derive(Clap, Debug)]
 struct Opts {
@@ -48,6 +49,8 @@ struct Opts {
     port: u16,
     #[clap(long)]
     base_url: String,
+    #[clap(long, default_value="10000")]
+    timeout_ms: u32,
     config: PathBuf,
 }
 
@@ -55,6 +58,7 @@ struct Opts {
 struct AppState {
     base_url: Url,
     client: reqwest::Client,
+    timeout: Duration,
     config: PreparedConfig,
     root_metric: ResolvedMetric,
     buf_size: Arc<AsyncMutex<BufSize>>,
@@ -98,35 +102,26 @@ impl BufSize {
 }
 
 impl AppState {
-    async fn from_config(config: PreparedConfig, base_url: Url) -> Result<Self, AnyError> {
-        let client = reqwest::Client::new();
-
-        let mut global_labels = BTreeMap::new();
-        for global_label in config.global_labels.iter() {
-            let labels_resp = client.get(global_label.url.clone()).send().await?;
-            let labels_json = serde_json::from_str(&labels_resp.text().await?)?;
-            let labels_root_match = Match {
-                value: &labels_json,
-                path: vec!(Step::Root),
-            };
-            let resolved_labels = global_label.labels.resolve(&labels_root_match)?;
-            global_labels.extend(resolved_labels.into_iter());
-        }
-        // println!("Global labels: {:?}", &global_labels);
-
+    fn new(
+        config: PreparedConfig,
+        global_labels: BTreeMap<String, String>,
+        client: reqwest::Client,
+        base_url: Url,
+        timeout: Duration,
+    ) -> Self {
         let root_metric = ResolvedMetric {
             metric_type: None,
             name: config.namespace.clone().unwrap_or_else(|| "".to_string()),
             labels: global_labels,
         };
-
-        Ok(AppState {
+        AppState {
             base_url,
             client,
+            timeout,
             config,
             root_metric,
             buf_size: Arc::new(AsyncMutex::new(BufSize::new())),
-        })
+        }
     }
 }
 
@@ -142,6 +137,8 @@ pub enum ProcessMetricsError {
     Join(#[from] tokio::task::JoinError),
     #[error("io error: {0}")]
     IO(#[from] std::io::Error),
+    #[error("timeout: {0}")]
+    Timeout(#[from] tokio::time::Elapsed)
 }
 
 impl ResponseError for ProcessMetricsError {
@@ -150,7 +147,12 @@ impl ResponseError for ProcessMetricsError {
             .body(format!("{}", self))
     }
     fn status_code(&self) -> http::StatusCode {
-        http::StatusCode::INTERNAL_SERVER_ERROR
+        use ProcessMetricsError::*;
+
+        match self {
+            Timeout(_) => http::StatusCode::GATEWAY_TIMEOUT,
+            _ => http::StatusCode::INTERNAL_SERVER_ERROR,
+        }
     }
 }
 
@@ -169,8 +171,9 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
         .map(|endpoint| {
             let endpoint_url = endpoint.url.clone();
             let client = data.client.clone();
+            let timeout = data.timeout;
             tokio::spawn(async move {
-                fetch_text_content(&client, endpoint_url).await
+                fetch_text_content(&client, endpoint_url, timeout).await
             })
         })
         .collect::<Vec<_>>();
@@ -217,10 +220,40 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
 }
 
 async fn fetch_text_content(
-    client: &reqwest::Client, url: Url
-) -> Result<String, reqwest::Error> {
-    client.get(url).send().await?
-        .text().await
+    client: &reqwest::Client, url: Url, timeout: Duration
+) -> Result<String, ProcessMetricsError> {
+
+    async fn fetch(client: &reqwest::Client, url: Url) -> Result<String, reqwest::Error> {
+        client.get(url).send().await?
+            .text().await
+    }
+
+    Ok(
+        timeout_at(tokio::time::Instant::now() + timeout, async move {
+            fetch(client, url).await
+        }).await??
+    )
+}
+
+async fn resolve_global_labels(
+    config: &PreparedConfig, client: &reqwest::Client, timeout: Duration,
+) -> Result<BTreeMap<String, String>, AnyError> {
+    let mut global_labels = BTreeMap::new();
+    for global_label in config.global_labels.iter() {
+        let text_resp = fetch_text_content(
+            &client, global_label.url.clone(), timeout
+        ).await?;
+        let labels_json = serde_json::from_str(&text_resp)?;
+        let labels_root_match = Match {
+            value: &labels_json,
+            path: vec!(Step::Root),
+        };
+        let resolved_labels = global_label.labels.resolve(&labels_root_match)?;
+        global_labels.extend(resolved_labels.into_iter());
+    }
+    // println!("Global labels: {:?}", &global_labels);
+
+    Ok(global_labels)
 }
 
 #[actix_web::main]
@@ -230,6 +263,7 @@ async fn main() -> Result<(), AnyError> {
     let opts = Opts::parse();
     let base_url = Url::parse(&opts.base_url)
         .with_context(|| format!("Invalid url: {}", &opts.base_url))?;
+    let timeout = Duration::from_millis(opts.timeout_ms as u64);
     let config = read_config(&opts.config)?;
     let prepared_config = PreparedConfig::create_from(&config, &base_url)?;
 
@@ -239,15 +273,26 @@ async fn main() -> Result<(), AnyError> {
         );
     }
 
+    let client = reqwest::Client::new();
     let app_state = loop {
         // TODO: How we can rid of those clones?
         let prepared_config = prepared_config.clone();
         let base_url = base_url.clone();
-        match AppState::from_config(prepared_config, base_url).await {
-            Ok(app_state) => break app_state,
+        match resolve_global_labels(&prepared_config, &client, timeout).await {
+            Ok(labels) => {
+                break AppState::new(
+                    prepared_config, labels, client, base_url, timeout
+                );
+            },
             Err(e) => {
-                log::error!("Error when preparing app state: {}", &e);
-                delay_for(Duration::from_secs(30)).await;
+                log::error!("Error when resolving global labels: {}", e);
+                log::warn!(
+                    "Waiting {} seconds before retry",
+                    GLOBAL_LABELS_RETRY_INTERVAL_SECS
+                );
+                delay_for(
+                    Duration::from_secs(GLOBAL_LABELS_RETRY_INTERVAL_SECS)
+                ).await;
                 continue;
             }
         }
