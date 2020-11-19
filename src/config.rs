@@ -5,6 +5,7 @@ use fehler::throws;
 use serde::{Deserialize, Deserializer};
 use serde::de::{Visitor, SeqAccess};
 
+use std::collections::HashMap;
 use std::fmt;
 use std::marker::PhantomData;
 use std::str::FromStr;
@@ -25,8 +26,12 @@ pub struct Config {
 
 impl Config {
     #[throws(AnyhowError)]
-    pub fn prepare(&self, base_url: &Url) -> PreparedConfig {
-        PreparedConfig::create_from(self, base_url)?
+    pub fn prepare(
+        &self,
+        base_url: &Url,
+        override_endpoint_urls: &HashMap<String, String>,
+    ) -> PreparedConfig {
+        PreparedConfig::create_from(self, base_url, override_endpoint_urls)?
     }
 }
 
@@ -44,9 +49,26 @@ pub struct Label {
 
 #[derive(Deserialize)]
 pub struct Endpoint {
+    pub id: Option<String>,
     pub url: String,
+    #[serde(default)]
+    pub url_parts: UrlParts,
     #[serde(deserialize_with = "deserialize_metrics")]
     pub metrics: Vec<Metric>,
+}
+
+#[derive(Deserialize, Default)]
+pub struct UrlParts {
+    #[serde(default)]
+    pub paths: HashMap<String, String>,
+    #[serde(default)]
+    pub params: HashMap<String, QueryParam>,
+}
+
+#[derive(Deserialize)]
+pub struct QueryParam {
+    pub name: String,
+    pub value: Option<String>,
 }
 
 #[derive(Deserialize)]

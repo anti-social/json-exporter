@@ -24,7 +24,7 @@ use jsonpath::{Match, Step};
 
 use mimalloc::MiMalloc;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -49,9 +49,22 @@ struct Opts {
     port: u16,
     #[clap(long)]
     base_url: String,
+    #[clap(long)]
+    endpoint_url: Vec<String>,
     #[clap(long, default_value="10000")]
     timeout_ms: u32,
     config: PathBuf,
+}
+
+fn parse_endpoint_url(url_dsl: &str) -> Result<(String, String), AnyError> {
+    Ok(match &url_dsl.splitn(2, ':').collect::<Vec<_>>()[..] {
+        [""] => bail!("Missing endpoint id"),
+        [_] => bail!("Missing endpoint url"),
+        [endpoint_id, endpoint_url_dsl] => {
+            (endpoint_id.to_string(), endpoint_url_dsl.to_string())
+        },
+        _ => unreachable!(),
+    })
 }
 
 #[derive(Clone)]
@@ -224,6 +237,7 @@ async fn fetch_text_content(
 ) -> Result<String, ProcessMetricsError> {
 
     async fn fetch(client: &reqwest::Client, url: Url) -> Result<String, reqwest::Error> {
+        log::debug!("Fetching url: {}", &url);
         client.get(url).send().await?
             .text().await
     }
@@ -261,16 +275,42 @@ async fn main() -> Result<(), AnyError> {
     env_logger::init();
 
     let opts = Opts::parse();
-    let base_url = Url::parse(&opts.base_url)
-        .with_context(|| format!("Invalid url: {}", &opts.base_url))?;
-    let timeout = Duration::from_millis(opts.timeout_ms as u64);
-    let config = read_config(&opts.config)?;
-    let prepared_config = PreparedConfig::create_from(&config, &base_url)?;
 
+    let mut base_url = Url::parse(&opts.base_url)
+        .with_context(|| format!("Invalid url: {}", &opts.base_url))?;
     if base_url.query().is_some() || base_url.fragment().is_some() {
         bail!(
             "Base url must not contain query or fragment parts: {}", &base_url
         );
+    }
+    if !base_url.path().ends_with('/') {
+        let mut base_url_path_segments = match base_url.path_segments_mut() {
+            Ok(segments) => segments,
+            Err(()) => bail!("Not a base url"),
+        };
+        base_url_path_segments.push("");
+    }
+
+    let endpoint_urls = opts.endpoint_url.iter()
+        .map(String::as_str)
+        .map(parse_endpoint_url)
+        .collect::<Result<HashMap<_, _>, _>>()?;
+    let timeout = Duration::from_millis(opts.timeout_ms as u64);
+    let config = read_config(&opts.config)?;
+    let prepared_config = PreparedConfig::create_from(
+        &config, &base_url, &endpoint_urls
+    )?;
+
+
+    for global_label in &prepared_config.global_labels {
+        log::info!("Global labels url: {}", &global_label.url);
+    }
+    for endpoint in &prepared_config.endpoints {
+        if let Some(endpoint_id) = &endpoint.id {
+            log::info!("Endpoint url [{}]: {}", endpoint_id, &endpoint.url);
+        } else {
+            log::info!("Endpoint url: {}", &endpoint.url);
+        }
     }
 
     let client = reqwest::Client::new();

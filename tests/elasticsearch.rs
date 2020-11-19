@@ -27,7 +27,9 @@ fn test_elasticsearch() {
     );
     let config: Config = serde_yaml::from_reader(es_config_file)
         .expect("es config");
-    let prepared_config = PreparedConfig::create_from(&config, &base_url)
+    let prepared_config = PreparedConfig::create_from(
+        &config, &base_url, &Default::default()
+    )
         .expect("prepare es config");
 
     let es_info = serde_json::from_str(ES_INFO).expect("es info");
@@ -38,7 +40,7 @@ fn test_elasticsearch() {
     let global_labels = prepared_config.global_labels.iter()
         .map(|global_label| {
             match global_label.url.as_str() {
-                "http://example.com:9200/" => global_label.labels.resolve(&es_info),
+                "http://example.com:9200/?" => global_label.labels.resolve(&es_info),
                 labels_url => unreachable!("Global labels url: {}", labels_url),
             }
         })
@@ -56,7 +58,7 @@ fn test_elasticsearch() {
     let mut buf = vec!();
     for endpoint in &prepared_config.endpoints {
         match endpoint.url.as_str() {
-            "http://example.com:9200/_cluster/health" => {
+            "http://example.com:9200/_cluster/health?" => {
                 let es_cluster_health = serde_json::from_str(ES_CLUSTER_HEALTH)
                     .expect("es cluster health");
                 assert_eq!(

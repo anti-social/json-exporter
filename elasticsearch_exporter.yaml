@@ -1,14 +1,6 @@
 # Config that is almost compatible with https://github.com/justwatchcom/elasticsearch_exporter
 
 _defaults:
-  cluster_health: &cluster-health /_cluster/health
-
-  # To collect stats from all nodes use: /_nodes/stats
-  nodes_stats: &nodes-stats /_nodes/_local/stats?groups=_all
-
-  # To collect shard stats add: ?level=shards
-  indices_stats: &indices-stats /_all/_stats?groups=_all
-
   ms_to_secs: &ms-to-secs
     name: mul
     args: 0.001
@@ -27,7 +19,7 @@ global_labels:
 #   - thread_pool_rejected_count
 
 endpoints:
-- url: *cluster-health
+- url: /_cluster/health
   name: cluster_health
   metrics:
   - number_of_nodes
@@ -42,8 +34,16 @@ endpoints:
   - number_of_in_flight_fetch
   - task_max_waiting_in_queue_millis
 
-# - url: /_nodes/stats
-- url: *nodes-stats
+- id: nodes
+  url: local?groups
+  url_parts:
+    paths:
+      local: /_nodes/_local/stats
+      all: /_nodes/stats
+    params:
+      groups:
+        name: groups
+        value: _all
   metrics:
   - path: nodes.*
     name: ''
@@ -439,7 +439,16 @@ endpoints:
         - path: write_kilobytes
           name: write_size_kilobytes_sum
 
-- url: *indices-stats
+- id: indices
+  url: /_all/_stats?groups=_all
+  url_parts:
+    params:
+      groups:
+        name: groups
+        value: _all
+      shards:
+        name: level
+        value: shards
   metrics:
   - path: indices.*
     name: indices
