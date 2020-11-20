@@ -8,6 +8,7 @@ use actix_web::{
     ResponseError,
 };
 use actix_web::dev::HttpResponseBuilder;
+use actix_web::http::{header, ContentEncoding};
 
 use anyhow::{bail, Context, Error as AnyError};
 
@@ -33,7 +34,6 @@ use tokio::time::{delay_for, timeout_at};
 use tokio::sync::{Mutex as AsyncMutex};
 
 use url::Url;
-use actix_web::http::{header, ContentEncoding};
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -167,6 +167,24 @@ impl ResponseError for ProcessMetricsError {
             _ => http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
+}
+
+async fn info() -> impl Responder {
+    // TODO: Show summary about backend and endpoints
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(r#"
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Json Exporter</title>
+            </head>
+            <body>
+               <p><a href="/metrics">Metrics page</a></p>
+             </body>
+          </html>
+        "#)
 }
 
 async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMetricsError> {
@@ -343,8 +361,8 @@ async fn main() -> Result<(), AnyError> {
         // println!("Creating http application");
         let app_state = app_state.lock().expect("app state mutex lock");
         App::new()
-            // .wrap(middleware::Compress::default())
             .data((*app_state).clone())
+            .route("/", web::get().to(info))
             .route("/metrics", web::get().to(metrics))
     })
     .bind(format!("{}:{}", &opts.host, &opts.port))?
