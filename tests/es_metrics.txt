@@ -199,8 +199,8 @@ elasticsearch_jvm_gc_collection_seconds_sum{cluster="catalog",gc="old",host="10.
 elasticsearch_jvm_gc_collection_seconds_sum{cluster="catalog",gc="young",host="10.10.232.4",name="es-catalog-2"} 94031.825
 # TYPE elasticsearch_process_cpu_percent gauge
 elasticsearch_process_cpu_percent{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19
-# TYPE elasticsearch_process_cpu_cpu_time_seconds_sum counter
-elasticsearch_process_cpu_cpu_time_seconds_sum{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="total"} 9903994.22
+# TYPE elasticsearch_process_cpu_time_seconds_sum counter
+elasticsearch_process_cpu_time_seconds_sum{cluster="catalog",host="10.10.232.4",name="es-catalog-2",type="total"} 9903994.22
 # TYPE elasticsearch_process_mem_virtual_size_bytes gauge
 elasticsearch_process_mem_virtual_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 31678554112
 # TYPE elasticsearch_process_open_files_count gauge

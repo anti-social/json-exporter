@@ -338,21 +338,21 @@ endpoints:
         metrics:
         - percent
         - path: total_in_millis
-          name: cpu_time_seconds_sum
+          name: time_seconds_sum
           type: counter
           modifiers: [*ms-to-secs]
           labels:
           - name: type
             value: total
         - path: sys_in_millis
-          name: cpu_time_seconds_sum
+          name: time_seconds_sum
           type: counter
           modifiers: [*ms-to-secs]
           labels:
           - name: type
             value: sys
         - path: user_in_millis
-          name: cpu_time_seconds_sum
+          name: time_seconds_sum
           type: counter
           modifiers: [*ms-to-secs]
           labels:
