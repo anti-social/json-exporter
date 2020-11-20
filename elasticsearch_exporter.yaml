@@ -658,7 +658,7 @@ endpoints:
       - path: request_cache
         metrics:
         - path: memory_size_in_bytes
-          name: cache_memory_bytes_total
+          name: memory_bytes_total
         - path: hit_count
           name: hits_total
           type: counter
