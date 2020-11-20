@@ -1,13 +1,58 @@
 on:
   push:
-    tags: [v*]
+#    tags: [v*]
 
 name: Create Release
 
 jobs:
-  release:
+  create-release:
     name: Create release
     runs-on: ubuntu-20.04
+    steps:
+#    - name: Create Release
+#      id: create_release
+#      uses: actions/create-release@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        tag_name: ${{ github.ref }}
+#        release_name: Release ${{ github.ref }}
+#        draft: false
+#        prerelease: false
+
+    - name: Prepare release info
+      run: |
+        set -eux
+        # if [[ $GITHUB_REF == refs/tags/v* ]]; then
+        #   VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\/v\(.*\)/\1/')
+        # fi
+        VERSION=0.0.5
+
+        mkdir release
+        echo "$VERSION" > release/version
+        # echo "${{  steps.create_release.outputs.upload_url }}" > release/upload-url
+        echo "http://example.com" > release/upload-url
+        ls -l release
+
+    - name: Upload release info
+      uses: actions/upload-artifact@v2
+      with:
+        name: release
+        path: release
+
+  build-release:
+    name: Build and publish release
+    runs-on: ubuntu-20.04
+    needs: [create-release]
+    strategy:
+      matrix:
+        include:
+#        - target: x86_64-unknown-linux-gnu
+#          image_version_suffix: ''
+#          latest: true
+        - target: x86_64-unknown-linux-musl
+          rustflags: '-Clink-arg=-Wl,-Bstatic -Clink-arg=-lc'
+          image_version_suffix: '-musl'
     steps:
     - name: Checkout sources
       uses: actions/checkout@v2
@@ -19,73 +64,93 @@ jobs:
         toolchain: stable
         override: true
 
-    - name: Build release
+    - name: Build release binaries
+      id: build_release
       uses: actions-rs/cargo@v1
+      env:
+        RUSTFLAGS: ${{ matrix.rustflags }}
       with:
+        use-cross: true
         command: build
-        args: --release
+        args: --release --target=${{ matrix.target }}
 
-    - name: Compress
-      id: create_archive
+    - name: Check binary
+      # TODO: Run inside a container
       run: |
         set -eux
-        if [[ $GITHUB_REF == refs/tags/v* ]]; then
-          VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\/v\(.*\)/\1/')
-        fi
-        OS=linux
-        ARCH=amd64
-        ARCHIVE_NAME=json-exporter-$VERSION-$OS-$ARCH.tar.gz
-        DIST_DIR=dist
-        mkdir $DIST_DIR
-        ARCHIVE_PATH=$DIST_DIR/$ARCHIVE_NAME
-        tar -czf $ARCHIVE_PATH --directory target/release json-exporter
+        ./target/${{ matrix.target }}/release/json-exporter --help
+
+    - name: Download release info
+      uses: actions/download-artifact@v2
+      with:
+        name: release
+        path: release
+
+    - name: Release info
+      id: release_info
+      run: |
+        echo "::set-output name=version::$(cat release/version)"
+        echo "::set-output name=upload_url::$(cat release/upload-url)"
+
+    - name: Compress
+      id: archive
+      run: |
+        DIST_NAME=json-exporter-${{ steps.release_info.outputs.version }}-${{ matrix.target }}
+        DIST_DIR=dist/$DIST_NAME
+        ARCHIVE_NAME=$DIST_NAME.tar.gz
+
+        mkdir -p $DIST_DIR
+        cp target/${{ matrix.target }}/release/json-exporter $DIST_DIR
         cp elasticsearch_exporter.yaml $DIST_DIR
-        echo "::set-output name=version::$VERSION"
-        echo "::set-output name=archive_name::$ARCHIVE_NAME"
-        echo "::set-output name=archive_path::$ARCHIVE_PATH"
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+        cd dist
+        tar -czf $ARCHIVE_NAME $DIST_NAME
+        ls -l $ARCHIVE_NAME
 
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ steps.create_archive.outputs.archive_path }}
-        asset_name: ${{ steps.create_archive.outputs.archive_name }}
-        asset_content_type: application/gzip
+        echo "::set-output name=name::$ARCHIVE_NAME"
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USER }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v1
-
-    - name: Build and push
-      id: docker_build
-      uses: docker/build-push-action@v2
-      with:
-        context: ./dist
-        file: ./Dockerfile.release
-        build-args: |
-            version=${{ steps.create_archive.outputs.version }}
-        push: true
-        tags: kovalidis/json-exporter:${{ steps.create_archive.outputs.version }}
-
-    - name: Image digest
-      run: echo ${{ steps.docker_build.outputs.digest }}
+#    - name: Upload Release Asset
+#      uses: actions/upload-release-asset@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        upload_url: ${{ steps.release_info.outputs.upload_url }}
+#        asset_path: ./${{ steps.archive.outputs.name }}
+#        asset_name: ${{ steps.archive.outputs.name }}
+#        asset_content_type: application/gzip
+#
+#    - name: Login to Docker Hub
+#      uses: docker/login-action@v1
+#      with:
+#        username: ${{ secrets.DOCKERHUB_USER }}
+#        password: ${{ secrets.DOCKERHUB_TOKEN }}
+#
+#    - name: Set up Docker Buildx
+#      id: buildx
+#      uses: docker/setup-buildx-action@v1
+#
+#    - name: Image tags
+#      id: image_tags
+#      run: |
+#        set -eux
+#        IMAGE=kovalidis/json-exporter
+#        TAGS=$IMAGE:${{ steps.release_info.outputs.version }}${{ matrix.image_version_suffix }}
+#        if [ "${{ matrix.latest }}" = "true"  ]; then
+#          TAGS="$TAGS,$IMAGE:latest"
+#        fi
+#        echo "::set-output name=tags::$TAGS"
+#
+#    - name: Build and push image
+#      id: docker_build
+#      uses: docker/build-push-action@v2
+#      with:
+#        context: ./dist
+#        file: ./Dockerfile.release-${{ matrix.target }}
+#        build-args: |
+#            version=${{ steps.release_info.outputs.version }}
+#        push: true
+#        tags: ${{ steps.image_tags.outputs.tags }}
+#
+#    - name: Check image
+#      run: |
+#        echo ${{ steps.docker_build.outputs.digest }}

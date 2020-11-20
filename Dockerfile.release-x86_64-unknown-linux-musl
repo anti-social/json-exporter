@@ -1,0 +1,9 @@
+FROM scratch
+
+ARG version
+
+ENV DIST=json-exporter-$version-x86_64-unknown-linux-musl
+
+COPY $DIST /app/
+
+ENTRYPOINT ["/app/json-exporter"]

@@ -1,0 +1,14 @@
+FROM debian:buster-slim
+
+ARG version
+
+RUN \
+  apt -y update && \
+  apt -y install libssl1.1 && \
+  rm -rf /var/lib/apt/lists/*
+
+ENV DIST=json-exporter-$version-x86_64-unknown-linux-gnu
+
+COPY $DIST /app/
+
+ENTRYPOINT ["/app/json-exporter"]
