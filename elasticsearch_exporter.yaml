@@ -532,8 +532,28 @@ endpoints:
           name: fixed_bit_set_memory_bytes_total
       - path: completion.size_in_bytes
         name: completion_bytes_total
+    - path: shards.*.*
+      name: shards
+      labels:
+      - name: shard
+        value: $1
+      - name: node
+        value: ${.routing.node}
+      - name: primary
+        value: ${.routing.primary}
+      metrics:
+      - path: docs.count
+        name: docs
+      - docs.deleted
+      - store.size_in_bytes
+  - path: indices.*
+    name: index_stats
+    labels:
+    - name: index
+      value: $1
+    metrics:
     - path: total
-      name: index_stats
+      name: ''
       metrics:
       - path: search
         metrics: &indices-search-metrics
@@ -655,17 +675,3 @@ endpoints:
         - path: evictions
           name: evictions_total
           type: counter
-    - path: shards.*.*
-      name: shards
-      labels:
-      - name: shard
-        value: $1
-      - name: node
-        value: ${.routing.node}
-      - name: primary
-        value: ${.routing.primary}
-      metrics:
-      - path: docs.count
-        name: docs
-      - docs.deleted
-      - store.size_in_bytes

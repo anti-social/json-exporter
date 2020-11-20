@@ -471,169 +471,169 @@ elasticsearch_indices_segment_version_map_memory_bytes_total{cluster="catalog",i
 elasticsearch_indices_completion_bytes_total{cluster="catalog",index="catalog_test"} 0
 elasticsearch_indices_completion_bytes_total{cluster="catalog",index="catalog_v1"} 0
 elasticsearch_indices_completion_bytes_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_search_open_contexts gauge
-elasticsearch_indices_index_stats_search_open_contexts{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_search_open_contexts{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_search_open_contexts{cluster="catalog",index="catalog_v2"} 49
-# TYPE elasticsearch_indices_index_stats_search_query_time_seconds_total counter
-elasticsearch_indices_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_test"} 63107.993
-elasticsearch_indices_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_v1"} 89582317.363
-elasticsearch_indices_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_v2"} 17010909.697
-# TYPE elasticsearch_indices_index_stats_search_query_total counter
-elasticsearch_indices_index_stats_search_query_total{cluster="catalog",index="catalog_test"} 17745399
-elasticsearch_indices_index_stats_search_query_total{cluster="catalog",index="catalog_v1"} 20467343081
-elasticsearch_indices_index_stats_search_query_total{cluster="catalog",index="catalog_v2"} 5211713822
-# TYPE elasticsearch_indices_index_stats_search_fetch_time_seconds_total counter
-elasticsearch_indices_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_test"} 438.79200000000003
-elasticsearch_indices_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_v1"} 181407.763
-elasticsearch_indices_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_v2"} 38777.794
-# TYPE elasticsearch_indices_index_stats_search_fetch_total counter
-elasticsearch_indices_index_stats_search_fetch_total{cluster="catalog",index="catalog_test"} 1757059
-elasticsearch_indices_index_stats_search_fetch_total{cluster="catalog",index="catalog_v1"} 2145797522
-elasticsearch_indices_index_stats_search_fetch_total{cluster="catalog",index="catalog_v2"} 497998684
-# TYPE elasticsearch_indices_index_stats_search_scroll_time_seconds_total counter
-elasticsearch_indices_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_v1"} 4013.58
-elasticsearch_indices_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_v2"} 1002.2180000000001
-# TYPE elasticsearch_indices_index_stats_search_scroll_current gauge
-elasticsearch_indices_index_stats_search_scroll_current{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_search_scroll_current{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_search_scroll_current{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_search_scroll_total counter
-elasticsearch_indices_index_stats_search_scroll_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_search_scroll_total{cluster="catalog",index="catalog_v1"} 1912
-elasticsearch_indices_index_stats_search_scroll_total{cluster="catalog",index="catalog_v2"} 392
-# TYPE elasticsearch_indices_index_stats_search_suggest_time_seconds_total counter
-elasticsearch_indices_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_search_suggest_total counter
-elasticsearch_indices_index_stats_search_suggest_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_search_suggest_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_search_suggest_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_indexing_index_time_seconds_total counter
-elasticsearch_indices_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_test"} 355969.842
-elasticsearch_indices_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_v1"} 959507.926
-elasticsearch_indices_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_v2"} 4143559.279
-# TYPE elasticsearch_indices_index_stats_indexing_index_total counter
-elasticsearch_indices_index_stats_indexing_index_total{cluster="catalog",index="catalog_test"} 261853401
-elasticsearch_indices_index_stats_indexing_index_total{cluster="catalog",index="catalog_v1"} 713388817
-elasticsearch_indices_index_stats_indexing_index_total{cluster="catalog",index="catalog_v2"} 2663861982
-# TYPE elasticsearch_indices_index_stats_indexing_delete_time_seconds_total counter
-elasticsearch_indices_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_test"} 677.155
-elasticsearch_indices_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_v1"} 1715.895
-elasticsearch_indices_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_v2"} 10929.708
-# TYPE elasticsearch_indices_index_stats_indexing_delete_total counter
-elasticsearch_indices_index_stats_indexing_delete_total{cluster="catalog",index="catalog_test"} 23682110
-elasticsearch_indices_index_stats_indexing_delete_total{cluster="catalog",index="catalog_v1"} 74590468
-elasticsearch_indices_index_stats_indexing_delete_total{cluster="catalog",index="catalog_v2"} 298265132
-# TYPE elasticsearch_indices_index_stats_indexing_noop_update_total counter
-elasticsearch_indices_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_indexing_throttle_time_seconds_total counter
-elasticsearch_indices_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_get_time_seconds_total counter
-elasticsearch_indices_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_get_total counter
-elasticsearch_indices_index_stats_get_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_get_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_get_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_merge_time_seconds_total counter
-elasticsearch_indices_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_test"} 81599.77500000001
-elasticsearch_indices_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_v1"} 170505.041
-elasticsearch_indices_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_v2"} 1260023.06
-# TYPE elasticsearch_indices_index_stats_merge_total counter
-elasticsearch_indices_index_stats_merge_total{cluster="catalog",index="catalog_test"} 4330
-elasticsearch_indices_index_stats_merge_total{cluster="catalog",index="catalog_v1"} 3196
-elasticsearch_indices_index_stats_merge_total{cluster="catalog",index="catalog_v2"} 50969
-# TYPE elasticsearch_indices_index_stats_merge_throttle_time_seconds_total counter
-elasticsearch_indices_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_test"} 49896.647000000004
-elasticsearch_indices_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_v1"} 47473.244
-elasticsearch_indices_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_v2"} 865327.493
-# TYPE elasticsearch_indices_index_stats_merge_stopped_time_seconds_total counter
-elasticsearch_indices_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_merge_merge_auto_throttle_bytes_total counter
-elasticsearch_indices_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_test"} 2191523840
-elasticsearch_indices_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_v1"} 1035502314
-elasticsearch_indices_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_v2"} 952583633
-# TYPE elasticsearch_indices_index_stats_refresh_time_seconds_total counter
-elasticsearch_indices_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_test"} 30888927
-elasticsearch_indices_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_v1"} 26481589
-elasticsearch_indices_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_v2"} 359277398
-# TYPE elasticsearch_indices_index_stats_refresh_total counter
-elasticsearch_indices_index_stats_refresh_total{cluster="catalog",index="catalog_test"} 41577
-elasticsearch_indices_index_stats_refresh_total{cluster="catalog",index="catalog_v1"} 33458
-elasticsearch_indices_index_stats_refresh_total{cluster="catalog",index="catalog_v2"} 474791
-# TYPE elasticsearch_indices_index_stats_flush_time_seconds_total counter
-elasticsearch_indices_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_test"} 6101353
-elasticsearch_indices_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_v1"} 19500548
-elasticsearch_indices_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_v2"} 64637068
-# TYPE elasticsearch_indices_index_stats_flush_total counter
-elasticsearch_indices_index_stats_flush_total{cluster="catalog",index="catalog_test"} 3663
-elasticsearch_indices_index_stats_flush_total{cluster="catalog",index="catalog_v1"} 8996
-elasticsearch_indices_index_stats_flush_total{cluster="catalog",index="catalog_v2"} 39853
-# TYPE elasticsearch_indices_index_stats_warmer_time_seconds_total counter
-elasticsearch_indices_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_test"} 250870
-elasticsearch_indices_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_v1"} 127201
-elasticsearch_indices_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_v2"} 2226583
-# TYPE elasticsearch_indices_index_stats_warmer_total counter
-elasticsearch_indices_index_stats_warmer_total{cluster="catalog",index="catalog_test"} 36976
-elasticsearch_indices_index_stats_warmer_total{cluster="catalog",index="catalog_v1"} 19343
-elasticsearch_indices_index_stats_warmer_total{cluster="catalog",index="catalog_v2"} 427105
-# TYPE elasticsearch_indices_index_stats_query_cache_memory_bytes_total gauge
-elasticsearch_indices_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_test"} 3925348135
-elasticsearch_indices_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_v1"} 7495513026
-elasticsearch_indices_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_v2"} 23225103279
-# TYPE elasticsearch_indices_index_stats_query_cache_cache_size gauge
-elasticsearch_indices_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_test"} 90749
-elasticsearch_indices_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_v1"} 85257
-elasticsearch_indices_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_v2"} 1254112
-# TYPE elasticsearch_indices_index_stats_query_cache_hits_total counter
-elasticsearch_indices_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_test"} 197822234
-elasticsearch_indices_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_v1"} 216133855645
-elasticsearch_indices_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_v2"} 57939641189
-# TYPE elasticsearch_indices_index_stats_query_cache_misses_total counter
-elasticsearch_indices_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_test"} 310545325
-elasticsearch_indices_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_v1"} 325848452954
-elasticsearch_indices_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_v2"} 75155740148
-# TYPE elasticsearch_indices_index_stats_query_cache_caches_total counter
-elasticsearch_indices_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_test"} 1952306
-elasticsearch_indices_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_v1"} 2356901065
-elasticsearch_indices_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_v2"} 464503389
-# TYPE elasticsearch_indices_index_stats_query_cache_evictions_total counter
-elasticsearch_indices_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_test"} 1861557
-elasticsearch_indices_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_v1"} 2356815808
-elasticsearch_indices_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_v2"} 463249277
-# TYPE elasticsearch_indices_index_stats_request_cache_cache_memory_bytes_total gauge
-elasticsearch_indices_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_v2"} 2119888952
-# TYPE elasticsearch_indices_index_stats_request_cache_hits_total counter
-elasticsearch_indices_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_test"} 232684
-elasticsearch_indices_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_v1"} 411840454
-elasticsearch_indices_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_v2"} 55309733
-# TYPE elasticsearch_indices_index_stats_request_cache_misses_total counter
-elasticsearch_indices_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_test"} 4362868
-elasticsearch_indices_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_v1"} 3378096312
-elasticsearch_indices_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_v2"} 1261956319
-# TYPE elasticsearch_indices_index_stats_request_cache_evictions_total counter
-elasticsearch_indices_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_test"} 4362868
-elasticsearch_indices_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_v1"} 3377159094
-elasticsearch_indices_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_v2"} 1261545289
-# TYPE elasticsearch_indices_index_stats_fielddata_memory_bytes_total gauge
-elasticsearch_indices_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_v2"} 0
-# TYPE elasticsearch_indices_index_stats_fielddata_evictions_total counter
-elasticsearch_indices_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_test"} 0
-elasticsearch_indices_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_v1"} 0
-elasticsearch_indices_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_search_open_contexts gauge
+elasticsearch_index_stats_search_open_contexts{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_search_open_contexts{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_search_open_contexts{cluster="catalog",index="catalog_v2"} 49
+# TYPE elasticsearch_index_stats_search_query_time_seconds_total counter
+elasticsearch_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_test"} 63107.993
+elasticsearch_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_v1"} 89582317.363
+elasticsearch_index_stats_search_query_time_seconds_total{cluster="catalog",index="catalog_v2"} 17010909.697
+# TYPE elasticsearch_index_stats_search_query_total counter
+elasticsearch_index_stats_search_query_total{cluster="catalog",index="catalog_test"} 17745399
+elasticsearch_index_stats_search_query_total{cluster="catalog",index="catalog_v1"} 20467343081
+elasticsearch_index_stats_search_query_total{cluster="catalog",index="catalog_v2"} 5211713822
+# TYPE elasticsearch_index_stats_search_fetch_time_seconds_total counter
+elasticsearch_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_test"} 438.79200000000003
+elasticsearch_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_v1"} 181407.763
+elasticsearch_index_stats_search_fetch_time_seconds_total{cluster="catalog",index="catalog_v2"} 38777.794
+# TYPE elasticsearch_index_stats_search_fetch_total counter
+elasticsearch_index_stats_search_fetch_total{cluster="catalog",index="catalog_test"} 1757059
+elasticsearch_index_stats_search_fetch_total{cluster="catalog",index="catalog_v1"} 2145797522
+elasticsearch_index_stats_search_fetch_total{cluster="catalog",index="catalog_v2"} 497998684
+# TYPE elasticsearch_index_stats_search_scroll_time_seconds_total counter
+elasticsearch_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_v1"} 4013.58
+elasticsearch_index_stats_search_scroll_time_seconds_total{cluster="catalog",index="catalog_v2"} 1002.2180000000001
+# TYPE elasticsearch_index_stats_search_scroll_current gauge
+elasticsearch_index_stats_search_scroll_current{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_search_scroll_current{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_search_scroll_current{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_search_scroll_total counter
+elasticsearch_index_stats_search_scroll_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_search_scroll_total{cluster="catalog",index="catalog_v1"} 1912
+elasticsearch_index_stats_search_scroll_total{cluster="catalog",index="catalog_v2"} 392
+# TYPE elasticsearch_index_stats_search_suggest_time_seconds_total counter
+elasticsearch_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_search_suggest_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_search_suggest_total counter
+elasticsearch_index_stats_search_suggest_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_search_suggest_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_search_suggest_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_indexing_index_time_seconds_total counter
+elasticsearch_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_test"} 355969.842
+elasticsearch_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_v1"} 959507.926
+elasticsearch_index_stats_indexing_index_time_seconds_total{cluster="catalog",index="catalog_v2"} 4143559.279
+# TYPE elasticsearch_index_stats_indexing_index_total counter
+elasticsearch_index_stats_indexing_index_total{cluster="catalog",index="catalog_test"} 261853401
+elasticsearch_index_stats_indexing_index_total{cluster="catalog",index="catalog_v1"} 713388817
+elasticsearch_index_stats_indexing_index_total{cluster="catalog",index="catalog_v2"} 2663861982
+# TYPE elasticsearch_index_stats_indexing_delete_time_seconds_total counter
+elasticsearch_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_test"} 677.155
+elasticsearch_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_v1"} 1715.895
+elasticsearch_index_stats_indexing_delete_time_seconds_total{cluster="catalog",index="catalog_v2"} 10929.708
+# TYPE elasticsearch_index_stats_indexing_delete_total counter
+elasticsearch_index_stats_indexing_delete_total{cluster="catalog",index="catalog_test"} 23682110
+elasticsearch_index_stats_indexing_delete_total{cluster="catalog",index="catalog_v1"} 74590468
+elasticsearch_index_stats_indexing_delete_total{cluster="catalog",index="catalog_v2"} 298265132
+# TYPE elasticsearch_index_stats_indexing_noop_update_total counter
+elasticsearch_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_indexing_noop_update_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_indexing_throttle_time_seconds_total counter
+elasticsearch_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_indexing_throttle_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_get_time_seconds_total counter
+elasticsearch_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_get_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_get_total counter
+elasticsearch_index_stats_get_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_get_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_get_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_merge_time_seconds_total counter
+elasticsearch_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_test"} 81599.77500000001
+elasticsearch_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_v1"} 170505.041
+elasticsearch_index_stats_merge_time_seconds_total{cluster="catalog",index="catalog_v2"} 1260023.06
+# TYPE elasticsearch_index_stats_merge_total counter
+elasticsearch_index_stats_merge_total{cluster="catalog",index="catalog_test"} 4330
+elasticsearch_index_stats_merge_total{cluster="catalog",index="catalog_v1"} 3196
+elasticsearch_index_stats_merge_total{cluster="catalog",index="catalog_v2"} 50969
+# TYPE elasticsearch_index_stats_merge_throttle_time_seconds_total counter
+elasticsearch_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_test"} 49896.647000000004
+elasticsearch_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_v1"} 47473.244
+elasticsearch_index_stats_merge_throttle_time_seconds_total{cluster="catalog",index="catalog_v2"} 865327.493
+# TYPE elasticsearch_index_stats_merge_stopped_time_seconds_total counter
+elasticsearch_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_merge_stopped_time_seconds_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_merge_merge_auto_throttle_bytes_total counter
+elasticsearch_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_test"} 2191523840
+elasticsearch_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_v1"} 1035502314
+elasticsearch_index_stats_merge_merge_auto_throttle_bytes_total{cluster="catalog",index="catalog_v2"} 952583633
+# TYPE elasticsearch_index_stats_refresh_time_seconds_total counter
+elasticsearch_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_test"} 30888927
+elasticsearch_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_v1"} 26481589
+elasticsearch_index_stats_refresh_time_seconds_total{cluster="catalog",index="catalog_v2"} 359277398
+# TYPE elasticsearch_index_stats_refresh_total counter
+elasticsearch_index_stats_refresh_total{cluster="catalog",index="catalog_test"} 41577
+elasticsearch_index_stats_refresh_total{cluster="catalog",index="catalog_v1"} 33458
+elasticsearch_index_stats_refresh_total{cluster="catalog",index="catalog_v2"} 474791
+# TYPE elasticsearch_index_stats_flush_time_seconds_total counter
+elasticsearch_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_test"} 6101353
+elasticsearch_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_v1"} 19500548
+elasticsearch_index_stats_flush_time_seconds_total{cluster="catalog",index="catalog_v2"} 64637068
+# TYPE elasticsearch_index_stats_flush_total counter
+elasticsearch_index_stats_flush_total{cluster="catalog",index="catalog_test"} 3663
+elasticsearch_index_stats_flush_total{cluster="catalog",index="catalog_v1"} 8996
+elasticsearch_index_stats_flush_total{cluster="catalog",index="catalog_v2"} 39853
+# TYPE elasticsearch_index_stats_warmer_time_seconds_total counter
+elasticsearch_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_test"} 250870
+elasticsearch_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_v1"} 127201
+elasticsearch_index_stats_warmer_time_seconds_total{cluster="catalog",index="catalog_v2"} 2226583
+# TYPE elasticsearch_index_stats_warmer_total counter
+elasticsearch_index_stats_warmer_total{cluster="catalog",index="catalog_test"} 36976
+elasticsearch_index_stats_warmer_total{cluster="catalog",index="catalog_v1"} 19343
+elasticsearch_index_stats_warmer_total{cluster="catalog",index="catalog_v2"} 427105
+# TYPE elasticsearch_index_stats_query_cache_memory_bytes_total gauge
+elasticsearch_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_test"} 3925348135
+elasticsearch_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_v1"} 7495513026
+elasticsearch_index_stats_query_cache_memory_bytes_total{cluster="catalog",index="catalog_v2"} 23225103279
+# TYPE elasticsearch_index_stats_query_cache_cache_size gauge
+elasticsearch_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_test"} 90749
+elasticsearch_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_v1"} 85257
+elasticsearch_index_stats_query_cache_cache_size{cluster="catalog",index="catalog_v2"} 1254112
+# TYPE elasticsearch_index_stats_query_cache_hits_total counter
+elasticsearch_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_test"} 197822234
+elasticsearch_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_v1"} 216133855645
+elasticsearch_index_stats_query_cache_hits_total{cluster="catalog",index="catalog_v2"} 57939641189
+# TYPE elasticsearch_index_stats_query_cache_misses_total counter
+elasticsearch_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_test"} 310545325
+elasticsearch_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_v1"} 325848452954
+elasticsearch_index_stats_query_cache_misses_total{cluster="catalog",index="catalog_v2"} 75155740148
+# TYPE elasticsearch_index_stats_query_cache_caches_total counter
+elasticsearch_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_test"} 1952306
+elasticsearch_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_v1"} 2356901065
+elasticsearch_index_stats_query_cache_caches_total{cluster="catalog",index="catalog_v2"} 464503389
+# TYPE elasticsearch_index_stats_query_cache_evictions_total counter
+elasticsearch_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_test"} 1861557
+elasticsearch_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_v1"} 2356815808
+elasticsearch_index_stats_query_cache_evictions_total{cluster="catalog",index="catalog_v2"} 463249277
+# TYPE elasticsearch_index_stats_request_cache_cache_memory_bytes_total gauge
+elasticsearch_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_request_cache_cache_memory_bytes_total{cluster="catalog",index="catalog_v2"} 2119888952
+# TYPE elasticsearch_index_stats_request_cache_hits_total counter
+elasticsearch_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_test"} 232684
+elasticsearch_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_v1"} 411840454
+elasticsearch_index_stats_request_cache_hits_total{cluster="catalog",index="catalog_v2"} 55309733
+# TYPE elasticsearch_index_stats_request_cache_misses_total counter
+elasticsearch_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_test"} 4362868
+elasticsearch_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_v1"} 3378096312
+elasticsearch_index_stats_request_cache_misses_total{cluster="catalog",index="catalog_v2"} 1261956319
+# TYPE elasticsearch_index_stats_request_cache_evictions_total counter
+elasticsearch_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_test"} 4362868
+elasticsearch_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_v1"} 3377159094
+elasticsearch_index_stats_request_cache_evictions_total{cluster="catalog",index="catalog_v2"} 1261545289
+# TYPE elasticsearch_index_stats_fielddata_memory_bytes_total gauge
+elasticsearch_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="catalog_v2"} 0
+# TYPE elasticsearch_index_stats_fielddata_evictions_total counter
+elasticsearch_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_test"} 0
+elasticsearch_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_v1"} 0
+elasticsearch_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_v2"} 0
 
 
