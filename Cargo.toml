@@ -18,6 +18,7 @@ jsonpath = { git = "https://github.com/anti-social/jsonpath-rs", rev = "dbe736f"
 log = "0.4"
 mimalloc = { version = "0.1", default-features = false }
 nom = { version = "6", features = ["alloc"] }
+openssl = { version = "0.10", features = ["vendored"] }
 reqwest = "0.10"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
