@@ -95,6 +95,7 @@ jobs:
         DIST_NAME=json-exporter-${{ steps.release_info.outputs.version }}-${{ matrix.target }}
         DIST_DIR=dist/$DIST_NAME
         ARCHIVE_NAME=$DIST_NAME.tar.gz
+        ARCHIVE_PATH=dist/$ARCHIVE_NAME
 
         mkdir -p $DIST_DIR
         cp target/${{ matrix.target }}/release/json-exporter $DIST_DIR
@@ -105,6 +106,7 @@ jobs:
         ls -l $ARCHIVE_NAME
 
         echo "::set-output name=name::$ARCHIVE_NAME"
+        echo "::set-output name=path::$ARCHIVE_PATH"
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
@@ -112,7 +114,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.release_info.outputs.upload_url }}
-        asset_path: ./${{ steps.archive.outputs.name }}
+        asset_path: ./${{ steps.archive.outputs.path }}
         asset_name: ${{ steps.archive.outputs.name }}
         asset_content_type: application/gzip
 
