@@ -222,7 +222,9 @@ async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMet
             json_parsing_duration += start_parsing.elapsed();
 
             let start_processing = Instant::now();
-            for (level, msg) in endpoint.metrics.process(&data.root_metric, &json, &mut writer) {
+            for (level, msg) in endpoint.process(
+                &data.root_metric, &json, &mut writer
+            ) {
                 log::log!(level, "{}", msg);
             }
             processing_duration += start_processing.elapsed();

@@ -71,17 +71,19 @@ fn bench_elasticsearch(b: &mut Bencher) {
             match endpoint.url.as_str() {
                 "/_cluster/health" => {
                     let es_cluster_health = read_json(ES_CLUSTER_HEALTH);
-                    endpoint.metrics.process(&root_metric, &es_cluster_health, &mut buf);
+                    endpoint.process(
+                        &root_metric, &es_cluster_health, &mut buf
+                    );
                     buf.write_all(b"\n\n").unwrap();
                 }
                 "/_nodes/_local/stats" => {
                     let es_nodes_stats = read_json(ES_NODES_STATS);
-                    endpoint.metrics.process(&root_metric, &es_nodes_stats, &mut buf);
+                    endpoint.process(&root_metric, &es_nodes_stats, &mut buf);
                     buf.write_all(b"\n\n").unwrap();
                 }
                 "/_all/_stats" => {
                     let es_indices_stats = read_json(ES_INDICES_STATS);
-                    endpoint.metrics.process(&root_metric, &es_indices_stats, &mut buf);
+                    endpoint.process(&root_metric, &es_indices_stats, &mut buf);
                     buf.write_all(b"\n\n").unwrap();
                 }
                 _ => {

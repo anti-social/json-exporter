@@ -1,25 +1,25 @@
-# TYPE elasticsearch_number_of_nodes gauge
-elasticsearch_number_of_nodes{cluster="catalog"} 3
-# TYPE elasticsearch_number_of_data_nodes gauge
-elasticsearch_number_of_data_nodes{cluster="catalog"} 3
-# TYPE elasticsearch_active_primary_shards gauge
-elasticsearch_active_primary_shards{cluster="catalog"} 680
-# TYPE elasticsearch_active_shards gauge
-elasticsearch_active_shards{cluster="catalog"} 1023
-# TYPE elasticsearch_relocating_shards gauge
-elasticsearch_relocating_shards{cluster="catalog"} 0
-# TYPE elasticsearch_initializing_shards gauge
-elasticsearch_initializing_shards{cluster="catalog"} 0
-# TYPE elasticsearch_unassigned_shards gauge
-elasticsearch_unassigned_shards{cluster="catalog"} 0
-# TYPE elasticsearch_delayed_unassigned_shards gauge
-elasticsearch_delayed_unassigned_shards{cluster="catalog"} 0
-# TYPE elasticsearch_number_of_pending_tasks gauge
-elasticsearch_number_of_pending_tasks{cluster="catalog"} 0
-# TYPE elasticsearch_number_of_in_flight_fetch gauge
-elasticsearch_number_of_in_flight_fetch{cluster="catalog"} 0
-# TYPE elasticsearch_task_max_waiting_in_queue_millis gauge
-elasticsearch_task_max_waiting_in_queue_millis{cluster="catalog"} 0
+# TYPE elasticsearch_cluster_health_number_of_nodes gauge
+elasticsearch_cluster_health_number_of_nodes{cluster="catalog"} 3
+# TYPE elasticsearch_cluster_health_number_of_data_nodes gauge
+elasticsearch_cluster_health_number_of_data_nodes{cluster="catalog"} 3
+# TYPE elasticsearch_cluster_health_active_primary_shards gauge
+elasticsearch_cluster_health_active_primary_shards{cluster="catalog"} 680
+# TYPE elasticsearch_cluster_health_active_shards gauge
+elasticsearch_cluster_health_active_shards{cluster="catalog"} 1023
+# TYPE elasticsearch_cluster_health_relocating_shards gauge
+elasticsearch_cluster_health_relocating_shards{cluster="catalog"} 0
+# TYPE elasticsearch_cluster_health_initializing_shards gauge
+elasticsearch_cluster_health_initializing_shards{cluster="catalog"} 0
+# TYPE elasticsearch_cluster_health_unassigned_shards gauge
+elasticsearch_cluster_health_unassigned_shards{cluster="catalog"} 0
+# TYPE elasticsearch_cluster_health_delayed_unassigned_shards gauge
+elasticsearch_cluster_health_delayed_unassigned_shards{cluster="catalog"} 0
+# TYPE elasticsearch_cluster_health_number_of_pending_tasks gauge
+elasticsearch_cluster_health_number_of_pending_tasks{cluster="catalog"} 0
+# TYPE elasticsearch_cluster_health_number_of_in_flight_fetch gauge
+elasticsearch_cluster_health_number_of_in_flight_fetch{cluster="catalog"} 0
+# TYPE elasticsearch_cluster_health_task_max_waiting_in_queue_millis gauge
+elasticsearch_cluster_health_task_max_waiting_in_queue_millis{cluster="catalog"} 0
 
 
 # TYPE elasticsearch_os_cpu_percent gauge

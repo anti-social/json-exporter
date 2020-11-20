@@ -129,6 +129,7 @@ impl<'a> TryFrom<&'a Vec<Label>> for PreparedLabels {
 pub struct PreparedEndpoint {
     pub id: Option<String>,
     pub url: Url,
+    pub name: String,
     pub metrics: PreparedMetrics,
 }
 
@@ -148,6 +149,7 @@ impl PreparedEndpoint {
         Self {
             id: endpoint.id.clone(),
             url,
+            name: endpoint.name.clone(),
             metrics: PreparedMetrics::create_from(&endpoint.metrics, None)?
         }
     }

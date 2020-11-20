@@ -12,11 +12,7 @@ use std::fmt::Write;
 use std::io::{Write as IOWrite};
 
 use crate::config::MetricType;
-use crate::prepare::{
-    PreparedLabels,
-    PreparedMetric,
-    PreparedMetrics,
-};
+use crate::prepare::{PreparedLabels, PreparedMetric, PreparedMetrics, PreparedEndpoint};
 
 type Stack<'a> = Vec<
     (
@@ -25,9 +21,33 @@ type Stack<'a> = Vec<
     )
 >;
 
-impl PreparedMetrics {
+impl PreparedEndpoint {
     pub fn process<W: IOWrite>(
-        &self, root_metric: &ResolvedMetric, json: &Value, buf: &mut W
+        &self,
+        root_metric: &ResolvedMetric,
+        json: &Value,
+        buf: &mut W
+    ) -> Vec<(log::Level, String)> {
+        let endpoint_metric = self.resolve_metric().merge_with_parent(root_metric);
+        self.metrics.process(&endpoint_metric, json, buf)
+    }
+
+    fn resolve_metric(&self) -> ResolvedMetric {
+        ResolvedMetric {
+            name: self.name.clone(),
+            metric_type: None,
+            labels: BTreeMap::new(),
+        }
+    }
+}
+
+impl PreparedMetrics {
+    // TODO: refactor this api
+    pub fn process<W: IOWrite>(
+        &self,
+        root_metric: &ResolvedMetric,
+        json: &Value,
+        buf: &mut W
     ) -> Vec<(log::Level, String)> {
         let mut stack: Stack = vec!();
         stack.push((self.iter(), None));

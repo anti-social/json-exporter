@@ -62,7 +62,9 @@ fn test_elasticsearch() {
                 let es_cluster_health = serde_json::from_str(ES_CLUSTER_HEALTH)
                     .expect("es cluster health");
                 assert_eq!(
-                    endpoint.metrics.process(&root_metric, &es_cluster_health, &mut buf),
+                    endpoint.process(
+                        &root_metric, &es_cluster_health, &mut buf
+                    ),
                     vec!()
                 );
                 buf.write_all(b"\n\n").unwrap();
@@ -71,7 +73,9 @@ fn test_elasticsearch() {
                 let es_nodes_stats = serde_json::from_str(ES_NODES_STATS)
                     .expect("es nodes stats");
                 assert_eq!(
-                    endpoint.metrics.process(&root_metric, &es_nodes_stats, &mut buf),
+                    endpoint.process(
+                        &root_metric, &es_nodes_stats, &mut buf
+                    ),
                     vec!()
                 );
                 buf.write_all(b"\n\n").unwrap();
@@ -80,7 +84,9 @@ fn test_elasticsearch() {
                 let es_indices_stats = serde_json::from_str(ES_INDICES_STATS)
                     .expect("es indices stats");
                 assert_eq!(
-                    endpoint.metrics.process(&root_metric, &es_indices_stats, &mut buf),
+                    endpoint.process(
+                        &root_metric, &es_indices_stats, &mut buf
+                    ),
                     vec!()
                 );
                 buf.write_all(b"\n\n").unwrap();

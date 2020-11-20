@@ -53,6 +53,8 @@ pub struct Endpoint {
     pub url: String,
     #[serde(default)]
     pub url_parts: UrlParts,
+    #[serde(default)]
+    pub name: String,
     #[serde(deserialize_with = "deserialize_metrics")]
     pub metrics: Vec<Metric>,
 }
