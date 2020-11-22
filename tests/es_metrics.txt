@@ -110,6 +110,8 @@ elasticsearch_indices_docs{cluster="catalog",host="10.10.232.4",name="es-catalog
 elasticsearch_indices_docs_deleted{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
 # TYPE elasticsearch_indices_store_size_bytes gauge
 elasticsearch_indices_store_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19974077389
+# TYPE elasticsearch_indices_store_throttle_time_seconds_total counter
+elasticsearch_indices_store_throttle_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
 # TYPE elasticsearch_indices_segments_memory_bytes gauge
 elasticsearch_indices_segments_memory_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19236050
 # TYPE elasticsearch_indices_segments_count gauge

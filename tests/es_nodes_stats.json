@@ -23,7 +23,8 @@
           "deleted": 0
         },
         "store": {
-          "size_in_bytes": 19974077389
+          "size_in_bytes": 19974077389,
+          "throttle_time_in_millis": 0
         },
         "indexing": {
           "index_total": 219016032,

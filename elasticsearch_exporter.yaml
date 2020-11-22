@@ -210,8 +210,12 @@ endpoints:
         - deleted
       - path: store
         metrics:
-        - name: size_bytes
-          path: size_in_bytes
+        - path: size_in_bytes
+          name: size_bytes
+        - path: throttle_time_in_millis
+          name: throttle_time_seconds_total
+          type: counter
+          modifiers: [*ms-to-secs]
       - path: segments
         metrics:
         - path: memory_in_bytes
