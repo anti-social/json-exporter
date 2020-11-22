@@ -6,9 +6,9 @@ use nom::bytes::complete::{
     is_not,
     tag,
     take_till1,
-    take_while,
 };
 use nom::character::complete::{
+    anychar,
     digit1,
     multispace0,
 };
@@ -17,6 +17,7 @@ use nom::combinator::{
     map_res,
 };
 use nom::multi::{
+    many0,
     many1,
 };
 use nom::sequence::{
@@ -66,13 +67,13 @@ fn var_ix(input: &str) -> IResult<&str, Var> {
 }
 
 fn ident(input: &str) -> IResult<&str, String> {
-    map(
-        preceded(
-            tag("."),
-            take_while(|c| c != ' ')
-        ),
-        str::to_string
-    )(input)
+    let (input, id) = preceded(
+        tag("."),
+        many0(anychar)
+    )(input)?;
+    let id: String = id.iter().collect();
+    let id = id.trim_end().to_string();
+    Ok((input, id))
 }
 
 fn var_ident(input: &str) -> IResult<&str, Var> {
@@ -126,6 +127,7 @@ pub fn string_with_placeholders(input: &str) -> IResult<&str, Vec<Placeholder>> 
 mod tests {
     use super::{
         Placeholder,
+        ident,
         string_with_placeholders,
         text_placeholder,
         uint,
@@ -158,6 +160,14 @@ mod tests {
         assert_eq!(
             uint("asdf"),
             Err(nom::Err::Error(Error { input: "asdf", code: ErrorKind::Digit }))
+        );
+    }
+
+    #[test]
+    fn test_ident() {
+        assert_eq!(
+            ident("."),
+            Ok(("", "".to_string()))
         );
     }
 
@@ -209,6 +219,10 @@ mod tests {
         );
         assert_eq!(
             var_placeholder("${.a.b.c}"),
+            Ok(("", Placeholder::Var(Var::Ident("a.b.c".to_string()))))
+        );
+        assert_eq!(
+            var_placeholder("${ .a.b.c  }"),
             Ok(("", Placeholder::Var(Var::Ident("a.b.c".to_string()))))
         );
     }
