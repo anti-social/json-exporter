@@ -268,6 +268,7 @@ impl Filter {
         let create_filter = match self.name.as_str() {
             "mul" | "multiply" => filters::Multiply::create,
             "div" | "divide" => filters::Divide::create,
+            "const" => filters::Const::create,
             _ => throw!(anyhow!("Unknown filter: {}", &self.name)),
         };
         create_filter(&self.args)?

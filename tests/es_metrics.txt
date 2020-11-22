@@ -1,3 +1,5 @@
+# TYPE elasticsearch_cluster_health_status gauge
+elasticsearch_cluster_health_status{cluster="catalog",color="green"} 1
 # TYPE elasticsearch_cluster_health_number_of_nodes gauge
 elasticsearch_cluster_health_number_of_nodes{cluster="catalog"} 3
 # TYPE elasticsearch_cluster_health_number_of_data_nodes gauge
@@ -635,5 +637,3 @@ elasticsearch_index_stats_fielddata_memory_bytes_total{cluster="catalog",index="
 elasticsearch_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_test"} 0
 elasticsearch_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_v1"} 0
 elasticsearch_index_stats_fielddata_evictions_total{cluster="catalog",index="catalog_v2"} 0
-
-

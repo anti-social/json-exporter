@@ -22,6 +22,13 @@ endpoints:
 - url: /_cluster/health
   name: cluster_health
   metrics:
+  - path: status
+    labels:
+    - name: color
+      value: ${.}
+    modifiers:
+    - name: const
+      args: 1
   - number_of_nodes
   - number_of_data_nodes
   - active_primary_shards

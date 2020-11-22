@@ -7,6 +7,7 @@ use json_exporter::prepare::PreparedConfig;
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::io::Write;
+use std::iter::{repeat, repeat_with};
 
 use serde_json;
 use serde_yaml;
@@ -106,10 +107,24 @@ fn test_elasticsearch() {
         File::open(es_metrics_filename).expect(es_metrics_filename)
     );
     let metrics = String::from_utf8(buf).expect("metrics must be utf8");
+
     for (line_ix, (line, expected_line)) in metrics.lines()
-        .zip(expected_metrics.lines())
+        .map(|l| Some(l))
+        .chain(repeat(None).into_iter())
+        .zip(expected_metrics.lines()
+            .map(|l| Some(l))
+            .chain(
+            repeat_with(|| None).into_iter()
+            )
+        )
         .enumerate()
     {
+        let (line, expected_line) = match (line, expected_line) {
+            (Some(line), Some(expected_line)) => (line, expected_line),
+            (Some(line), None) => (line, Ok("".to_string())),
+            (None, Some(expected_line)) => ("", expected_line),
+            (None, None) => break,
+        };
         let expected_line = expected_line.expect("read line");
         assert_eq!(line, expected_line, "Line number: {}", line_ix + 1);
     }

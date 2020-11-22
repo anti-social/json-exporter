@@ -156,7 +156,7 @@ pub enum MetricType {
 #[derive(Deserialize)]
 pub struct Filter {
     pub name: String,
-    pub args: serde_yaml::Value,
+    pub args: serde_json::Value,
 }
 
 

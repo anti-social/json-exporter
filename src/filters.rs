@@ -1,36 +1,91 @@
-use anyhow::{anyhow, Error as AnyhowError};
+use anyhow::{anyhow, bail, Error as AnyError};
 
 use dyn_clone::DynClone;
 
 use fehler::{throw, throws};
 
-use serde_json::{Value as JsonValue};
-use serde_yaml::{Value as YamlValue};
+use serde_json::Value;
+
+type BoxedFilter = Box<dyn Filter + Send>;
 
 pub trait Filter: DynClone {
-    fn apply(&self, value: &JsonValue) -> Result<JsonValue, AnyhowError>;
+    fn apply(&self, value: &Value) -> Result<Value, AnyError>;
 }
 
-#[throws(AnyhowError)]
-fn single_arg_f64(args: &YamlValue, map_key: &str) -> f64 {
+#[throws(AnyError)]
+fn single_scalar_arg(args: &Value) -> Value {
     match args {
-        YamlValue::Number(f) => f.as_f64().unwrap(),
-        YamlValue::Sequence(seq) => {
+        Value::Number(_) | Value::String(_) | Value::Bool(_) => args.clone(),
+        Value::Array(seq) => {
             match seq.as_slice() {
-                [YamlValue::Number(ref f)] => f.as_f64().unwrap(),
-                _ => throw!(anyhow!("Invalid argument: {:?}", args)),
+                [arg] => arg.clone(),
+                _ => bail!("Single argument required")
             }
         }
-        YamlValue::Mapping(map) => {
-            if map.len() > 1 {
-                throw!(anyhow!("Too many arguments: {:?}", args));
-            }
-            match map.get(&YamlValue::from(map_key)) {
-                Some(YamlValue::Number(f)) => f.as_f64().unwrap(),
-                _ => throw!(anyhow!("Invalid argument: {:?}", args)),
+        Value::Object(_) => bail!("Object arguments is not supported"),
+        Value::Null => bail!("Single argument required"),
+    }
+}
+
+#[throws(AnyError)]
+fn single_arg_f64(args: &Value, map_key: Option<&str>) -> f64 {
+    match args {
+        Value::Number(f) => f.as_f64().unwrap(),
+        Value::Array(seq) => {
+            match seq.as_slice() {
+                [Value::Number(ref f)] => f.as_f64().unwrap(),
+                _ => bail!("Invalid argument: {:?}", args),
             }
         }
-        _ => throw!(anyhow!("Invalid arguments: {:?}", args)),
+        Value::Object(map) => {
+            if let Some(map_key) = map_key {
+                if map.len() > 1 {
+                    bail!("Too many arguments: {:?}", args);
+                }
+                match map.get(map_key) {
+                    Some(Value::Number(f)) => f.as_f64().unwrap(),
+                    _ => bail!("Invalid argument: {:?}", args),
+                }
+            } else {
+                bail!("Keyword arguments is not supported");
+            }
+        }
+        _ => bail!("Invalid arguments: {:?}", args),
+    }
+}
+
+#[throws(AnyError)]
+fn check_no_args(args: &Value) -> () {
+    match args {
+        Value::Array(seq) if seq.is_empty() => {}
+        Value::Object(map) if map.is_empty() => {}
+        Value::Null => {}
+        _ => {
+            bail!("Unexpected arguments");
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct Const {
+    value: Value,
+}
+
+impl Const {
+    #[throws(AnyError)]
+    pub fn create(args: &Value) -> BoxedFilter {
+        Box::new(
+            Self {
+                value: single_scalar_arg(args)?,
+            }
+        ) as BoxedFilter
+    }
+}
+
+impl Filter for Const {
+    #[throws(AnyError)]
+    fn apply(&self, _: &Value) -> Value {
+        self.value.clone()
     }
 }
 
@@ -40,20 +95,20 @@ pub struct Multiply {
 }
 
 impl Multiply {
-    #[throws(AnyhowError)]
-    pub fn create(args: &YamlValue) -> Box<dyn Filter + Send> {
+    #[throws(AnyError)]
+    pub fn create(args: &Value) -> BoxedFilter {
         Box::new(Self {
-            factor: single_arg_f64(args, "factor")?
+            factor: single_arg_f64(args, Some("factor"))?
         }) as Box<dyn Filter + Send>
     }
 }
 
 impl Filter for Multiply {
-    #[throws(AnyhowError)]
-    fn apply(&self, value: &JsonValue) -> JsonValue {
+    #[throws(AnyError)]
+    fn apply(&self, value: &Value) -> Value {
         match value {
-            JsonValue::Number(v) => {
-                JsonValue::from(v.as_f64().unwrap() * self.factor)
+            Value::Number(v) => {
+                Value::from(v.as_f64().unwrap() * self.factor)
             }
             _ => throw!(anyhow!("Invalid type")),
         }
@@ -66,22 +121,22 @@ pub struct Divide {
 }
 
 impl Divide {
-    #[throws(AnyhowError)]
-    pub fn create(args: &YamlValue) -> Box<dyn Filter + Send> {
+    #[throws(AnyError)]
+    pub fn create(args: &Value) -> BoxedFilter {
         Box::new(Self {
-            denominator: single_arg_f64(args, "divisor")?
+            denominator: single_arg_f64(args, Some("divisor"))?
         }) as Box<dyn Filter + Send>
     }
 }
 
 impl Filter for Divide {
-    #[throws(AnyhowError)]
-    fn apply(&self, value: &JsonValue) -> JsonValue {
+    #[throws(AnyError)]
+    fn apply(&self, value: &Value) -> Value {
         match value {
-            JsonValue::Number(v) => {
-                JsonValue::from(v.as_f64().unwrap() / self.denominator)
+            Value::Number(v) => {
+                Value::from(v.as_f64().unwrap() / self.denominator)
             }
-            _ => throw!(anyhow!("Invalid type")),
+            _ => bail!("Invalid type"),
         }
     }
 }
