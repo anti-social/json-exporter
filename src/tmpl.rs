@@ -6,10 +6,11 @@ use nom::bytes::complete::{
     is_not,
     tag,
     take_till1,
+    take_while,
 };
 use nom::character::complete::{
-    anychar,
     digit1,
+    multispace0,
 };
 use nom::combinator::{
     map,
@@ -22,6 +23,7 @@ use nom::sequence::{
     delimited,
     preceded,
 };
+use nom::error::ParseError;
 
 
 type StrResult<'a, T> = IResult<&'a str, T>;
@@ -36,6 +38,17 @@ pub enum Var {
 pub enum Placeholder {
     Text(String),
     Var(Var),
+}
+
+fn ws<'a, F: 'a, O, E: ParseError<&'a str>>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+  where
+  F: Fn(&'a str) -> IResult<&'a str, O, E>,
+{
+    delimited(
+        multispace0,
+        inner,
+        multispace0
+    )
 }
 
 fn uint(input: &str) -> IResult<&str, u32> {
@@ -56,9 +69,9 @@ fn ident(input: &str) -> IResult<&str, String> {
     map(
         preceded(
             tag("."),
-            many1(anychar)
+            take_while(|c| c != ' ')
         ),
-        |chars| chars.iter().collect()
+        str::to_string
     )(input)
 }
 
@@ -78,7 +91,7 @@ fn var_placeholder(input: &str) -> IResult<&str, Placeholder> {
         tag("${"), is_not("}"), tag("}")
     )(input)?;
     let (_, placeholder) = map(
-        var,
+        ws(var),
         Placeholder::Var
     )(var_str)?;
     Ok((input, placeholder))
@@ -177,6 +190,22 @@ mod tests {
         assert_eq!(
             var_placeholder("${0}"),
             Ok(("", Placeholder::Var(Var::Ix(0))))
+        );
+        assert_eq!(
+            var_placeholder("${ 0 }"),
+            Ok(("", Placeholder::Var(Var::Ix(0))))
+        );
+        assert_eq!(
+            var_placeholder("${  0  }"),
+            Ok(("", Placeholder::Var(Var::Ix(0))))
+        );
+        assert_eq!(
+            var_placeholder("${.}"),
+            Ok(("", Placeholder::Var(Var::Ident("".to_string()))))
+        );
+        assert_eq!(
+            var_placeholder("${ . }"),
+            Ok(("", Placeholder::Var(Var::Ident("".to_string()))))
         );
         assert_eq!(
             var_placeholder("${.a.b.c}"),
