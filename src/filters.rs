@@ -54,6 +54,7 @@ fn single_arg_f64(args: &Value, map_key: Option<&str>) -> f64 {
     }
 }
 
+#[allow(dead_code)]
 #[throws(AnyError)]
 fn check_no_args(args: &Value) -> () {
     match args {
