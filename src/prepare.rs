@@ -243,6 +243,8 @@ impl JsonSelector {
     fn new(expression: &str) -> Self {
         let expression = if expression.is_empty() {
             "$".to_string()
+        } else if expression.starts_with('$') {
+            expression.to_string()
         } else {
             format!("$.{}", expression)
         };
@@ -349,10 +351,10 @@ impl PreparedPlaceholder {
             Placeholder::Text(text) => {
                 PreparedPlaceholder::Text(text.clone())
             },
-            Placeholder::Var(Var::Ix(ix)) => {
+            Placeholder::Var(Var::PathPart(ix)) => {
                 PreparedPlaceholder::VarIx(*ix)
             },
-            Placeholder::Var(Var::Ident(ident)) => {
+            Placeholder::Var(Var::Selector(ident)) => {
                 let selector = JsonSelector::new(ident)?;
                 PreparedPlaceholder::VarIdent(selector)
             }

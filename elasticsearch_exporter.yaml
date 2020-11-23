@@ -10,7 +10,7 @@ global_labels:
 - url: /
   labels:
   - name: cluster
-    value: ${.cluster_name}
+    value: ${$.cluster_name}
 
 # TODO: consider adding metric type overrides
 # metric_type_overrides:
@@ -25,7 +25,7 @@ endpoints:
   - path: status
     labels:
     - name: color
-      value: ${.}
+      value: ${ $ }
     modifiers:
     - name: const
       args: 1
@@ -56,20 +56,20 @@ endpoints:
     name: ''
     labels:
     - name: host
-      value: ${.host}
+      value: ${$.host}
     - name: name
-      value: ${.name}
+      value: ${$.name}
     # TODO: es_master_node, es_data_node, es_ingest_node labels should be booleans
     # - name: es_master_node
-    #   value: ${.roles[?(@ == master)]}
+    #   value: ${ $.roles[?(@ == master)] }
     #   modifiers:
     #   - name: bool
     # - name: es_data_node
-    #   value: ${.roles[?(@ == data)]}
+    #   value: ${$.roles[?(@ == data)]}
     #   modifiers:
     #   - name: bool
     # - name: es_ingest_node
-    #   value: ${.roles[?(@ == ingest)]}
+    #   value: ${$.roles[?(@ == ingest)]}
     #   modifiers:
     #   - name: bool
     metrics:
@@ -422,9 +422,9 @@ endpoints:
         name: data
         labels:
         - name: mount
-          value: ${.mount}
+          value: ${$.mount}
         - name: path
-          value: ${.path}
+          value: ${$.path}
         metrics:
         - path: available_in_bytes
           name: available_bytes
@@ -549,9 +549,9 @@ endpoints:
       - name: shard
         value: $1
       - name: node
-        value: ${.routing.node}
+        value: ${$.routing.node}
       - name: primary
-        value: ${.routing.primary}
+        value: ${$.routing.primary}
       metrics:
       - path: docs.count
         name: docs

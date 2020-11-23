@@ -8,20 +8,21 @@ use nom::bytes::complete::{
     take_till1,
 };
 use nom::character::complete::{
-    anychar,
     digit1,
     multispace0,
 };
 use nom::combinator::{
     map,
     map_res,
+    rest,
+    recognize,
 };
 use nom::multi::{
-    many0,
     many1,
 };
 use nom::sequence::{
     delimited,
+    pair,
     preceded,
 };
 use nom::error::ParseError;
@@ -31,8 +32,8 @@ type StrResult<'a, T> = IResult<&'a str, T>;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Var {
-    Ix(u32),
-    Ident(String),
+    PathPart(u32),
+    Selector(String),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -62,24 +63,28 @@ fn uint(input: &str) -> IResult<&str, u32> {
 fn var_ix(input: &str) -> IResult<&str, Var> {
     map(
         uint,
-        Var::Ix
+        Var::PathPart
     )(input)
 }
 
-fn ident(input: &str) -> IResult<&str, String> {
-    let (input, id) = preceded(
-        tag("."),
-        many0(anychar)
+fn selector(input: &str) -> IResult<&str, String> {
+    let (input, path) = recognize(
+        pair(tag("$"), rest)
     )(input)?;
-    let id: String = id.iter().collect();
-    let id = id.trim_end().to_string();
-    Ok((input, id))
+    let path = path.trim_end().to_string();
+    Ok((input, path))
+
+    // let (input, id) = preceded(
+    //     tag("."),
+    //     rest
+    // )(input)?;
+    // Ok((input, id))
 }
 
 fn var_ident(input: &str) -> IResult<&str, Var> {
     map(
-        ident,
-        Var::Ident
+        selector,
+        Var::Selector
     )(input)
 }
 
@@ -127,7 +132,7 @@ pub fn string_with_placeholders(input: &str) -> IResult<&str, Vec<Placeholder>> 
 mod tests {
     use super::{
         Placeholder,
-        ident,
+        selector,
         string_with_placeholders,
         text_placeholder,
         uint,
@@ -164,10 +169,14 @@ mod tests {
     }
 
     #[test]
-    fn test_ident() {
+    fn test_selector() {
         assert_eq!(
-            ident("."),
-            Ok(("", "".to_string()))
+            selector("$"),
+            Ok(("", "$".to_string()))
+        );
+        assert_eq!(
+            selector("$[(@.age > 18)]"),
+            Ok(("", "$[(@.age > 18)]".to_string()))
         );
     }
 
@@ -175,11 +184,11 @@ mod tests {
     fn test_var() {
         assert_eq!(
             var("0"),
-            Ok(("", Var::Ix(0)))
+            Ok(("", Var::PathPart(0)))
         );
         assert_eq!(
-            var(".asdf"),
-            Ok(("", Var::Ident("asdf".to_string())))
+            var("$.asdf"),
+            Ok(("", Var::Selector("$.asdf".to_string())))
         );
     }
 
@@ -187,11 +196,11 @@ mod tests {
     fn test_var_simple_placeholder() {
         assert_eq!(
             var_simple_placeholder("$0"),
-            Ok(("", Placeholder::Var(Var::Ix(0))))
+            Ok(("", Placeholder::Var(Var::PathPart(0))))
         );
         assert_eq!(
             var_simple_placeholder("$0,"),
-            Ok((",", Placeholder::Var(Var::Ix(0))))
+            Ok((",", Placeholder::Var(Var::PathPart(0))))
         );
     }
 
@@ -199,31 +208,31 @@ mod tests {
     fn test_placeholder() {
         assert_eq!(
             var_placeholder("${0}"),
-            Ok(("", Placeholder::Var(Var::Ix(0))))
+            Ok(("", Placeholder::Var(Var::PathPart(0))))
         );
         assert_eq!(
             var_placeholder("${ 0 }"),
-            Ok(("", Placeholder::Var(Var::Ix(0))))
+            Ok(("", Placeholder::Var(Var::PathPart(0))))
         );
         assert_eq!(
             var_placeholder("${  0  }"),
-            Ok(("", Placeholder::Var(Var::Ix(0))))
+            Ok(("", Placeholder::Var(Var::PathPart(0))))
         );
         assert_eq!(
-            var_placeholder("${.}"),
-            Ok(("", Placeholder::Var(Var::Ident("".to_string()))))
+            var_placeholder("${$}"),
+            Ok(("", Placeholder::Var(Var::Selector("$".to_string()))))
         );
         assert_eq!(
-            var_placeholder("${ . }"),
-            Ok(("", Placeholder::Var(Var::Ident("".to_string()))))
+            var_placeholder("${ $ }"),
+            Ok(("", Placeholder::Var(Var::Selector("$".to_string()))))
         );
         assert_eq!(
-            var_placeholder("${.a.b.c}"),
-            Ok(("", Placeholder::Var(Var::Ident("a.b.c".to_string()))))
+            var_placeholder("${$.a.b.c}"),
+            Ok(("", Placeholder::Var(Var::Selector("$.a.b.c".to_string()))))
         );
         assert_eq!(
-            var_placeholder("${ .a.b.c  }"),
-            Ok(("", Placeholder::Var(Var::Ident("a.b.c".to_string()))))
+            var_placeholder("${ $.a.b.c  }"),
+            Ok(("", Placeholder::Var(Var::Selector("$.a.b.c".to_string()))))
         );
     }
 
@@ -247,23 +256,23 @@ mod tests {
         );
         assert_eq!(
             string_with_placeholders("${0}"),
-            Ok(("", vec!(Placeholder::Var(Var::Ix(0)))))
+            Ok(("", vec!(Placeholder::Var(Var::PathPart(0)))))
         );
         assert_eq!(
             string_with_placeholders("Test string: ${0}"),
-            Ok(("", vec!(Placeholder::Text("Test string: ".to_string()), Placeholder::Var(Var::Ix(0)))))
+            Ok(("", vec!(Placeholder::Text("Test string: ".to_string()), Placeholder::Var(Var::PathPart(0)))))
         );
         assert_eq!(
-            string_with_placeholders("Indexes: ${1} - $0, variable: ${.user.name}"),
+            string_with_placeholders("Indexes: ${1} - $0, variable: ${ $.user.name }"),
             Ok((
                 "",
                 vec!(
                     Placeholder::Text("Indexes: ".to_string()),
-                    Placeholder::Var(Var::Ix(1)),
+                    Placeholder::Var(Var::PathPart(1)),
                     Placeholder::Text(" - ".to_string()),
-                    Placeholder::Var(Var::Ix(0)),
+                    Placeholder::Var(Var::PathPart(0)),
                     Placeholder::Text(", variable: ".to_string()),
-                    Placeholder::Var(Var::Ident("user.name".to_string())),
+                    Placeholder::Var(Var::Selector("$.user.name".to_string())),
                 )
             ))
         );

@@ -563,7 +563,7 @@ mod tests {
             - path: ''
               labels:
               - name: cluster
-                value: ${.cluster_name}
+                value: ${$.cluster_name}
               metrics:
               - path: number_of_nodes
         "};
@@ -726,7 +726,7 @@ mod tests {
                 - name: shard
                   value: $1
                 - name: node
-                  value: ${.routing.node}
+                  value: ${$.routing.node}
                 metrics:
                 - path: docs.*
                   name: docs_$1
@@ -772,7 +772,7 @@ mod tests {
                 - name: shard
                   value: $1
                 - name: node
-                  value: ${.routing.node}
+                  value: ${$.routing.node}
                 metrics:
                 - path: search.*
                   type: counter
