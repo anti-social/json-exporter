@@ -1,5 +1,7 @@
 # TYPE elasticsearch_cluster_health_status gauge
 elasticsearch_cluster_health_status{cluster="catalog",color="green"} 1
+elasticsearch_cluster_health_status{cluster="catalog",color="yellow"} 0
+elasticsearch_cluster_health_status{cluster="catalog",color="red"} 0
 # TYPE elasticsearch_cluster_health_number_of_nodes gauge
 elasticsearch_cluster_health_number_of_nodes{cluster="catalog"} 3
 # TYPE elasticsearch_cluster_health_number_of_data_nodes gauge

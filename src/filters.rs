@@ -141,3 +141,33 @@ impl Filter for Divide {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct Equal {
+    value: Value,
+}
+
+impl Equal {
+    #[throws(AnyError)]
+    pub fn create(args: &Value) -> BoxedFilter {
+        Box::new(Self {
+            value: single_scalar_arg(args)?
+        }) as Box<dyn Filter + Send>
+    }
+}
+
+impl Filter for Equal {
+    #[throws(AnyError)]
+    fn apply(&self, value: &Value) -> Value {
+        use Value::*;
+
+        Value::from(match (&self.value, value) {
+            (String(v1), String(v2)) if v1 == v2 => true,
+            (Number(v1), Number(v2)) if v1 == v2 => true,
+            (Bool(v1), Bool(v2)) if v1 == v2 => true,
+            (Null, Null) => true,
+            // TODO: Implement equality for arrays and objects
+            _ => false,
+        })
+    }
+}
