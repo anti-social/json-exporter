@@ -48,6 +48,19 @@ jobs:
       with:
         command: test
 
+    - name: Install stable toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+
+    - name: Build benches
+      uses: actions-rs/cargo@v1
+      with:
+        toolchain: +nightly
+        command: build
+        args: --benches
+
   lints:
     name: Lints
     runs-on: ubuntu-20.04

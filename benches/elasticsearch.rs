@@ -38,7 +38,7 @@ fn bench_elasticsearch(b: &mut Bencher) {
     );
     let config: Config = serde_yaml::from_reader(es_config_file)
         .expect("es config");
-    let prepared_config = PreparedConfig::create_from(&config, &es_url)
+    let prepared_config = PreparedConfig::create_from(&config, &es_url, &Default::default())
         .expect("prepare es config");
 
     let es_info = read_json(ES_INFO);
