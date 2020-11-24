@@ -3,7 +3,7 @@
 # Json exporter
 Prometheus metrics exporter for any json metrics that are provided by elasticsearch or kafka-manager
 
-## Why I need another exporter?
+## Why do I need another exporter?
 
 - you can drop metrics you don't use. Less metrics - better for Prometheus
 - you can add metrics you need without patching source code. Just put them into config.
@@ -12,8 +12,6 @@ Prometheus metrics exporter for any json metrics that are provided by elasticsea
 ## How to run
 
 Download and unpack last release: https://github.com/anti-social/json-exporter/releases
-
-Download or create your own config: https://raw.githubusercontent.com/anti-social/json-exporter/master/elasticsearch_exporter.yaml
 
 Run it:
 
@@ -28,3 +26,10 @@ You can set log level via `RUST_LOG` environment variable:
 ```shell script
 RUST_LOG=info ./json-exporter --base-url http://localhost:9200 elasticsearch_exporter.yaml
 ``` 
+
+### Using docker
+
+```shell script
+docker pull kovalidis/json-exporter
+docker run -it --rm -p 9114 -e RUST_LOG=info kovalidis/json-exporter --base-url http://localhost:9200 /app/elasticsearch_exporter.yaml
+```
