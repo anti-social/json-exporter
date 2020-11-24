@@ -229,6 +229,10 @@ elasticsearch_transport_rx_size_bytes_total{cluster="catalog",host="10.10.232.4"
 elasticsearch_transport_tx_packets_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 8780076123
 # TYPE elasticsearch_transport_tx_size_bytes_total counter
 elasticsearch_transport_tx_size_bytes_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 13857199795729
+# TYPE elasticsearch_http_current_open gauge
+elasticsearch_http_current_open{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 178
+# TYPE elasticsearch_http_total_opened counter
+elasticsearch_http_total_opened{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 715917
 # TYPE elasticsearch_breakers_estimated_size_bytes gauge
 elasticsearch_breakers_estimated_size_bytes{breaker="accounting",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 19236050
 elasticsearch_breakers_estimated_size_bytes{breaker="fielddata",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0

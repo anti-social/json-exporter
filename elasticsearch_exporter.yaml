@@ -412,6 +412,12 @@ endpoints:
         name: tx_packets_total
       - path: tx_size_in_bytes
         name: tx_size_bytes_total
+    - path: http
+      name: http
+      metrics:
+      - current_open
+      - path: total_opened
+        type: counter
     - path: breakers.*
       name: breakers
       labels:
