@@ -100,13 +100,15 @@ endpoints:
         - path: 15m
           name: load15
       - path: mem
-        metrics:
+        metrics: &os-mem-metrics
         - path: free_in_bytes
           name: free_bytes
         - path: used_in_bytes
           name: used_bytes
         - path: total_in_bytes
           name: total_bytes
+      - path: swap
+        metrics: *os-mem-metrics
     - path: indices
       metrics:
       - path: fielddata

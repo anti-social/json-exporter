@@ -40,6 +40,12 @@ elasticsearch_os_mem_free_bytes{cluster="catalog",host="10.10.232.4",name="es-ca
 elasticsearch_os_mem_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 16524816384
 # TYPE elasticsearch_os_mem_total_bytes gauge
 elasticsearch_os_mem_total_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 16766140416
+# TYPE elasticsearch_os_swap_free_bytes gauge
+elasticsearch_os_swap_free_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_os_swap_used_bytes gauge
+elasticsearch_os_swap_used_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
+# TYPE elasticsearch_os_swap_total_bytes gauge
+elasticsearch_os_swap_total_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
 # TYPE elasticsearch_indices_fielddata_memory_size_bytes gauge
 elasticsearch_indices_fielddata_memory_size_bytes{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 0
 # TYPE elasticsearch_indices_fielddata_evictions counter
