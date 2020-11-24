@@ -299,6 +299,9 @@ endpoints:
           modifiers: [*ms-to-secs]
     - path: jvm
       metrics:
+      - path: uptime_in_millis
+        name: uptime_seconds
+        modifiers: [*ms-to-secs]
       - path: mem
         name: memory
         metrics:

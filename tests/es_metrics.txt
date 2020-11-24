@@ -170,6 +170,8 @@ elasticsearch_indices_merges_total_size_bytes_total{cluster="catalog",host="10.1
 elasticsearch_indices_merges_total_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 116745.416
 # TYPE elasticsearch_indices_merges_total_throttled_time_seconds_total counter
 elasticsearch_indices_merges_total_throttled_time_seconds_total{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 61434.353
+# TYPE elasticsearch_jvm_uptime_seconds gauge
+elasticsearch_jvm_uptime_seconds{cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 6530866.015000001
 # TYPE elasticsearch_jvm_memory_used_bytes gauge
 elasticsearch_jvm_memory_used_bytes{area="heap",cluster="catalog",host="10.10.232.4",name="es-catalog-2"} 3021086472
 # TYPE elasticsearch_jvm_memory_max_bytes gauge
