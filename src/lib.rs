@@ -2,6 +2,7 @@ pub mod config;
 pub mod convert;
 mod filters;
 pub mod prepare;
+pub mod service;
 mod tmpl;
 
 use anyhow::{Error as AnyError};
