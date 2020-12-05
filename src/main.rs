@@ -53,6 +53,8 @@ struct Opts {
     endpoint_url: Vec<String>,
     #[clap(long, default_value="10000")]
     timeout_ms: u32,
+    #[clap(long)]
+    namespace: Option<String>,
     config: PathBuf,
 }
 
@@ -117,6 +119,7 @@ impl BufSize {
 impl AppState {
     fn new(
         config: PreparedConfig,
+        namespace: Option<String>,
         global_labels: BTreeMap<String, String>,
         client: reqwest::Client,
         base_url: Url,
@@ -124,7 +127,9 @@ impl AppState {
     ) -> Self {
         let root_metric = ResolvedMetric {
             metric_type: None,
-            name: config.namespace.clone().unwrap_or_else(|| "".to_string()),
+            name: namespace.unwrap_or(
+                config.namespace.clone().unwrap_or_else(|| "".to_string())
+            ),
             labels: global_labels,
         };
         AppState {
@@ -341,7 +346,7 @@ async fn main() -> Result<(), AnyError> {
         match resolve_global_labels(&prepared_config, &client, timeout).await {
             Ok(labels) => {
                 break AppState::new(
-                    prepared_config, labels, client, base_url, timeout
+                    prepared_config, opts.namespace, labels, client, base_url, timeout
                 );
             },
             Err(e) => {
