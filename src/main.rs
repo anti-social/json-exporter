@@ -138,6 +138,9 @@ async fn main() -> Result<(), AnyError> {
             .route("/", web::get().to(info))
             .route("/metrics", web::get().to(metrics))
     })
+    .workers(1)
+    .max_connections(100)
+    .keep_alive(30)
     .bind(format!("{}:{}", &opts.host, &opts.port))?
     .run()
     .await?;
