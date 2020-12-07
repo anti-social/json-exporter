@@ -14,6 +14,7 @@ dyn-clone = "1"
 env_logger = "0.8"
 fehler = "1"
 flate2 = "1"
+futures-locks = "0.6"
 jsonpath = { git = "https://github.com/anti-social/jsonpath-rs", rev = "dbe736f" }
 log = "0.4"
 mimalloc = { version = "0.1", default-features = false }

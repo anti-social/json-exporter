@@ -45,6 +45,8 @@ struct Opts {
     endpoint_url: Vec<String>,
     #[clap(long, default_value="10000")]
     timeout_ms: u32,
+    #[clap(long, default_value="5000")]
+    cache_expiration_ms: u32,
     #[clap(long)]
     namespace: Option<String>,
     config: PathBuf,
@@ -111,8 +113,15 @@ async fn main() -> Result<(), AnyError> {
         let base_url = base_url.clone();
         match resolve_global_labels(&prepared_config, &client, timeout).await {
             Ok(labels) => {
+                log::debug!("Global labels: {:?}", &labels);
                 break AppState::new(
-                    prepared_config, opts.namespace, labels, client, base_url, timeout
+                    prepared_config,
+                    opts.namespace,
+                    labels,
+                    client,
+                    base_url, 
+                    timeout,
+                    Duration::from_millis(opts.cache_expiration_ms as u64),
                 );
             },
             Err(e) => {

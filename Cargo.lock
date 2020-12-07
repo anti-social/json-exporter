@@ -757,6 +757,7 @@ checksum = "9b3b0c040a1fe6529d30b3c5944b280c7f0dcb2930d2c3062bca967b602583d0"
 dependencies = [
  "futures-channel",
  "futures-core",
+ "futures-executor",
  "futures-io",
  "futures-sink",
  "futures-task",
@@ -780,10 +781,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "847ce131b72ffb13b6109a221da9ad97a64cbe48feb1028356b836b47b8f1748"
 
 [[package]]
+name = "futures-executor"
+version = "0.3.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4caa2b2b68b880003057c1dd49f1ed937e38f22fcf6c212188a121f08cf40a65"
+dependencies = [
+ "futures-core",
+ "futures-task",
+ "futures-util",
+]
+
+[[package]]
 name = "futures-io"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "611834ce18aaa1bd13c4b374f5d653e1027cf99b6b502584ff8c9a64413b30bb"
+
+[[package]]
+name = "futures-locks"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50c4e684ddb2d8a4db5ca8a02b35156da129674ba4412b6f528698d58c594954"
+dependencies = [
+ "futures",
+ "tokio",
+]
 
 [[package]]
 name = "futures-macro"
@@ -1091,6 +1113,7 @@ dependencies = [
  "env_logger",
  "fehler",
  "flate2",
+ "futures-locks",
  "indoc",
  "jsonpath",
  "log",

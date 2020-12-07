@@ -13,6 +13,8 @@ use anyhow::{Error as AnyError};
 use flate2::Compression;
 use flate2::write::GzEncoder;
 
+use futures_locks::{RwLock as AsyncRwLock};
+
 use jsonpath::{Match, Step};
 
 use std::collections::BTreeMap;
@@ -20,14 +22,13 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use tokio::time::timeout_at;
-use tokio::sync::{Mutex as AsyncMutex};
 
 use url::Url;
 
 use crate::prepare::PreparedConfig;
 use crate::convert::ResolvedMetric;
 
-const DEFAULT_BUF_SIZE: usize = 1 << 14; // 16Kb
+const PROMETHEUS_CONTENT_TYPE: &str = "text/plain; version=0.0.4";
 
 #[derive(thiserror::Error, Debug)]
 pub enum ProcessMetricsError {
@@ -42,7 +43,9 @@ pub enum ProcessMetricsError {
     #[error("io error: {0}")]
     IO(#[from] std::io::Error),
     #[error("timeout: {0}")]
-    Timeout(#[from] tokio::time::Elapsed)
+    Timeout(#[from] tokio::time::Elapsed),
+    #[error("cache not initialized")]
+    CacheNotInitialized,
 }
 
 impl ResponseError for ProcessMetricsError {
@@ -67,44 +70,7 @@ pub struct AppState {
     timeout: Duration,
     config: PreparedConfig,
     root_metric: ResolvedMetric,
-    buf_size: Arc<AsyncMutex<BufSize>>,
-}
-
-struct BufSize {
-    last_sizes: [usize; 10],
-    ix: usize,
-    current_size: usize,
-}
-
-impl BufSize {
-    pub fn new() -> Self {
-        Self {
-            last_sizes: [DEFAULT_BUF_SIZE; 10],
-            ix: 0,
-            current_size: DEFAULT_BUF_SIZE,
-        }
-    }
-
-    pub fn buf_size(&self) -> usize {
-        self.current_size
-    }
-
-    pub fn seen(&mut self, buf_size: usize) -> bool {
-        let ix = self.ix;
-        self.last_sizes[ix] = buf_size;
-        if ix < self.last_sizes.len() - 1 {
-            self.ix += 1;
-        } else {
-            self.ix = 0;
-        }
-        let max_size = *self.last_sizes.iter().max()
-            .unwrap_or(&DEFAULT_BUF_SIZE);
-        if self.current_size != max_size {
-            self.current_size = max_size;
-            return true;
-        }
-        false
-    }
+    cache: Arc<AsyncRwLock<CachedMetrics>>,
 }
 
 impl AppState {
@@ -115,10 +81,11 @@ impl AppState {
         client: reqwest::Client,
         base_url: Url,
         timeout: Duration,
+        cache_expiration: Duration,
     ) -> Self {
         let root_metric = ResolvedMetric {
             metric_type: None,
-            name: namespace.unwrap_or(
+            name: namespace.unwrap_or_else(||
                 config.namespace.clone().unwrap_or_else(|| "".to_string())
             ),
             labels: global_labels,
@@ -129,7 +96,51 @@ impl AppState {
             timeout,
             config,
             root_metric,
-            buf_size: Arc::new(AsyncMutex::new(BufSize::new())),
+            cache: Arc::new(AsyncRwLock::new(
+                CachedMetrics::new(cache_expiration)
+            )),
+        }
+    }
+}
+
+struct CachedMetrics {
+    expiration_time: Duration,
+    expired_at: Instant,
+    buf: Vec<u8>,
+    err: Option<ProcessMetricsError>,
+}
+
+impl CachedMetrics {
+    fn new(cache_expiration: Duration) -> Self {
+        Self {
+            expiration_time: cache_expiration,
+            expired_at: Instant::now(),
+            buf: vec!(),
+            err: Some(ProcessMetricsError::CacheNotInitialized),
+        }
+    }
+    fn set_ok(&mut self) {
+        self.expired_at = Instant::now() + self.expiration_time;
+        self.err = None;
+    }
+
+    fn set_error(&mut self, err: ProcessMetricsError) {
+        self.expired_at = Instant::now() + self.expiration_time;
+        self.err = Some(err);
+    }
+
+    fn is_initialized(&self) -> bool {
+        #[allow(clippy::match_like_matches_macro)]
+        match &self.err {
+            Some(ProcessMetricsError::CacheNotInitialized) => false,
+            _ => true,
+        }
+    }
+
+    fn to_response(&self) -> HttpResponse {
+        match &self.err {
+            None => prometheus_response(self.buf.clone()),
+            Some(err) => err.error_response(),
         }
     }
 }
@@ -150,7 +161,6 @@ pub async fn resolve_global_labels(
         let resolved_labels = global_label.labels.resolve(&labels_root_match)?;
         global_labels.extend(resolved_labels.into_iter());
     }
-    // println!("Global labels: {:?}", &global_labels);
 
     Ok(global_labels)
 }
@@ -173,69 +183,94 @@ pub async fn info() -> impl Responder {
         "#)
 }
 
-pub async fn metrics(data: web::Data<AppState>) -> Result<impl Responder, ProcessMetricsError> {
+pub async fn metrics(
+    state: web::Data<AppState>
+) -> Result<impl Responder, ProcessMetricsError> {
+    {
+        let cached_metrics = state.cache.read().await;
+        if cached_metrics.is_initialized() &&
+            Instant::now() < cached_metrics.expired_at
+        {
+            return Ok(cached_metrics.to_response());
+        }
+    }
+
+    let mut cached_metrics = match state.cache.try_write() {
+        Ok(cached_metrics) => {
+            cached_metrics
+        }
+        Err(()) => {
+            let cached_metrics = state.cache.read().await;
+            return Ok(cached_metrics.to_response());
+        }
+    };
+
+    let buf = &mut cached_metrics.buf;
+    buf.clear();
+    log::trace!("Initial buffer capacity: {}", buf.capacity());
+
+    match process_metrics(state, buf).await {
+        Ok(()) => cached_metrics.set_ok(),
+        Err(e) => cached_metrics.set_error(e),
+    };
+
+    Ok(cached_metrics.to_response())
+}
+
+fn prometheus_response(data: Vec<u8>) -> HttpResponse {
+    HttpResponse::Ok()
+        .content_type(PROMETHEUS_CONTENT_TYPE)
+        .header(header::CONTENT_ENCODING, ContentEncoding::Gzip.as_str())
+        .body(data)
+}
+
+async fn process_metrics(
+    state: web::Data<AppState>, buf: &mut Vec<u8>
+) -> Result<(), ProcessMetricsError> {
     let mut requests_duration = Duration::default();
     let mut json_parsing_duration = Duration::default();
     let mut processing_duration = Duration::default();
 
-    let buf_size = {
-        let buf_size = data.buf_size.lock().await;
-        buf_size.buf_size()
-    };
-
     // TODO: limit fetching concurrency
-    let mut resp_futures = data.config.endpoints.iter()
+    let mut resp_futures = state.config.endpoints.iter()
         .map(|endpoint| {
             let endpoint_url = endpoint.url.clone();
-            let client = data.client.clone();
-            let timeout = data.timeout;
+            let client = state.client.clone();
+            let timeout = state.timeout;
             tokio::spawn(async move {
                 fetch_text_content(&client, endpoint_url, timeout).await
             })
         })
         .collect::<Vec<_>>();
 
-    let mut buf = Vec::with_capacity(buf_size);
-    {
-        let mut writer = GzEncoder::new(&mut buf, Compression::default());
-        for (endpoint, resp_fut) in data.config.endpoints.iter().zip(resp_futures.iter_mut()) {
-            let start_requests = Instant::now();
-            let text_resp = resp_fut.await??;
-            requests_duration += start_requests.elapsed();
+    let mut writer = GzEncoder::new(buf, Compression::default());
+    for (endpoint, resp_fut) in state.config.endpoints.iter().zip(resp_futures.iter_mut()) {
+        let start_requests = Instant::now();
+        let text_resp = resp_fut.await??;
+        requests_duration += start_requests.elapsed();
 
-            let start_parsing = Instant::now();
-            let json = serde_json::from_str(&text_resp)?;
-            json_parsing_duration += start_parsing.elapsed();
+        let start_parsing = Instant::now();
+        let json = serde_json::from_str(&text_resp)?;
+        json_parsing_duration += start_parsing.elapsed();
 
-            let start_processing = Instant::now();
-            for (level, msg) in endpoint.process(
-                &data.root_metric, &json, &mut writer
-            ) {
-                log::log!(level, "{}", msg);
-            }
-            processing_duration += start_processing.elapsed();
+        let start_processing = Instant::now();
+        for (level, msg) in endpoint.process(
+            &state.root_metric, &json, &mut writer
+        ) {
+            log::log!(level, "{}", msg);
         }
-        writer.finish()?;
+        processing_duration += start_processing.elapsed();
     }
+    writer.finish()?;
 
     log::info!(
-        "Timings: requests={}ms, parsing={}ms, processing={}ms",
+        "Timings: requests_total={}ms, parsing={}ms, processing={}ms",
         requests_duration.as_millis(),
         json_parsing_duration.as_millis(),
         processing_duration.as_millis(),
     );
 
-    let mut buf_size = data.buf_size.lock().await;
-    if buf_size.seen(buf.capacity()) {
-        log::info!("Set new buffer size: {}", buf_size.buf_size());
-    }
-
-    Ok(
-        HttpResponse::Ok()
-            .content_type("text/plain; version=0.0.4")
-            .header(header::CONTENT_ENCODING, ContentEncoding::Gzip.as_str())
-            .body(buf)
-    )
+    Ok(())    
 }
 
 async fn fetch_text_content(
