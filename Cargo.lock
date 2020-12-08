@@ -1113,6 +1113,7 @@ dependencies = [
  "env_logger",
  "fehler",
  "flate2",
+ "futures",
  "futures-locks",
  "indoc",
  "jsonpath",

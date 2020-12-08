@@ -13,6 +13,8 @@ use anyhow::{Error as AnyError};
 use flate2::Compression;
 use flate2::write::GzEncoder;
 
+use futures::future::try_join_all;
+
 use futures_locks::{RwLock as AsyncRwLock};
 
 use jsonpath::{Match, Step};
@@ -22,6 +24,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use tokio::time::timeout_at;
+use tokio::sync::Semaphore;
 
 use url::Url;
 
@@ -67,6 +70,7 @@ impl ResponseError for ProcessMetricsError {
 pub struct AppState {
     base_url: Url,
     client: reqwest::Client,
+    concurrency: u8,
     timeout: Duration,
     config: PreparedConfig,
     root_metric: ResolvedMetric,
@@ -80,6 +84,7 @@ impl AppState {
         global_labels: BTreeMap<String, String>,
         client: reqwest::Client,
         base_url: Url,
+        concurrency: u8,
         timeout: Duration,
         cache_expiration: Duration,
     ) -> Self {
@@ -93,6 +98,7 @@ impl AppState {
         AppState {
             base_url,
             client,
+            concurrency,
             timeout,
             config,
             root_metric,
@@ -177,8 +183,8 @@ pub async fn info() -> impl Responder {
               <title>Json Exporter</title>
             </head>
             <body>
-               <p><a href="/metrics">Metrics page</a></p>
-             </body>
+              <p>To the <a href="/metrics">metrics page</a></p>
+            </body>
           </html>
         "#)
 }
@@ -231,23 +237,29 @@ async fn process_metrics(
     let mut json_parsing_duration = Duration::default();
     let mut processing_duration = Duration::default();
 
-    // TODO: limit fetching concurrency
-    let mut resp_futures = state.config.endpoints.iter()
+    let semaphore = Arc::new(Semaphore::new(state.concurrency as usize));
+    let resp_futures = state.config.endpoints.iter()
         .map(|endpoint| {
             let endpoint_url = endpoint.url.clone();
             let client = state.client.clone();
             let timeout = state.timeout;
-            tokio::spawn(async move {
-                fetch_text_content(&client, endpoint_url, timeout).await
-            })
+            let semaphore = semaphore.clone();
+            async move {
+                let _permit = semaphore.acquire().await;
+                let start_request = Instant::now();
+                let resp = fetch_text_content(&client, endpoint_url, timeout).await;
+                resp.map(|r| (r, start_request.elapsed()))
+            }
         })
         .collect::<Vec<_>>();
 
+    let responses = try_join_all(resp_futures).await?;
+
     let mut writer = GzEncoder::new(buf, Compression::default());
-    for (endpoint, resp_fut) in state.config.endpoints.iter().zip(resp_futures.iter_mut()) {
-        let start_requests = Instant::now();
-        let text_resp = resp_fut.await??;
-        requests_duration += start_requests.elapsed();
+    for (endpoint, (text_resp, request_duration)) in
+        state.config.endpoints.iter().zip(responses.iter())
+    {
+        requests_duration += *request_duration;
 
         let start_parsing = Instant::now();
         let json = serde_json::from_str(&text_resp)?;
@@ -270,7 +282,7 @@ async fn process_metrics(
         processing_duration.as_millis(),
     );
 
-    Ok(())    
+    Ok(())
 }
 
 async fn fetch_text_content(

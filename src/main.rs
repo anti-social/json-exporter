@@ -20,6 +20,7 @@ use json_exporter::service::{
 use mimalloc::MiMalloc;
 
 use std::collections::HashMap;
+use std::num::NonZeroU8;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -43,6 +44,8 @@ struct Opts {
     base_url: String,
     #[clap(long)]
     endpoint_url: Vec<String>,
+    #[clap(long, default_value="5")]
+    concurrency: NonZeroU8,
     #[clap(long, default_value="10000")]
     timeout_ms: u32,
     #[clap(long, default_value="5000")]
@@ -119,7 +122,8 @@ async fn main() -> Result<(), AnyError> {
                     opts.namespace,
                     labels,
                     client,
-                    base_url, 
+                    base_url,
+                    opts.concurrency.get(),
                     timeout,
                     Duration::from_millis(opts.cache_expiration_ms as u64),
                 );
