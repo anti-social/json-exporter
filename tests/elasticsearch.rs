@@ -50,11 +50,10 @@ fn test_elasticsearch() {
         .flatten()
         .collect();
 
-    let root_metric = ResolvedMetric {
-        metric_type: None,
-        name: prepared_config.namespace.clone().unwrap_or("".to_string()),
-        labels: global_labels,
-    };
+    let root_metric = ResolvedMetric::new_root(
+        prepared_config.namespace.clone().unwrap_or("".to_string()),
+        global_labels,
+    );
 
     let mut buf = vec!();
     for endpoint in &prepared_config.endpoints {

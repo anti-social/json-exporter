@@ -80,21 +80,13 @@ pub struct AppState {
 impl AppState {
     pub fn new(
         config: PreparedConfig,
-        namespace: Option<String>,
-        global_labels: BTreeMap<String, String>,
+        root_metric: ResolvedMetric,
         client: reqwest::Client,
         base_url: Url,
         concurrency: u8,
         timeout: Duration,
         cache_expiration: Duration,
     ) -> Self {
-        let root_metric = ResolvedMetric {
-            metric_type: None,
-            name: namespace.unwrap_or_else(||
-                config.namespace.clone().unwrap_or_else(|| "".to_string())
-            ),
-            labels: global_labels,
-        };
         AppState {
             base_url,
             client,

@@ -249,6 +249,14 @@ pub struct ResolvedMetric {
 }
 
 impl ResolvedMetric {
+    pub fn new_root(name: String, labels: BTreeMap<String, String>) -> Self {
+        Self {
+            metric_type: None,
+            name,
+            labels,
+        }
+    }
+
     fn merge_with_parent(mut self, parent: &ResolvedMetric) -> Self {
         self.name = if parent.name.is_empty() {
             self.name.clone()

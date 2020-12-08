@@ -9,6 +9,7 @@ use anyhow::{bail, Context, Error as AnyError};
 use clap::Clap;
 
 use json_exporter::read_config;
+use json_exporter::convert::ResolvedMetric;
 use json_exporter::prepare::PreparedConfig;
 use json_exporter::service::{
     AppState,
@@ -117,10 +118,15 @@ async fn main() -> Result<(), AnyError> {
         match resolve_global_labels(&prepared_config, &client, timeout).await {
             Ok(labels) => {
                 log::debug!("Global labels: {:?}", &labels);
+                let root_metric = ResolvedMetric::new_root(
+                    opts.namespace.unwrap_or_else(||
+                        config.namespace.clone().unwrap_or_else(|| "".to_string())
+                    ),
+                    labels,
+                );
                 break AppState::new(
                     prepared_config,
-                    opts.namespace,
-                    labels,
+                    root_metric,
                     client,
                     base_url,
                     opts.concurrency.get(),
