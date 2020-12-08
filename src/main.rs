@@ -43,7 +43,7 @@ struct Opts {
     port: u16,
     #[clap(long)]
     base_url: String,
-    #[clap(long)]
+    #[clap(long, multiple=true, number_of_values=1)]
     endpoint_url: Vec<String>,
     #[clap(long, default_value="5")]
     concurrency: NonZeroU8,
