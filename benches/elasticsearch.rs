@@ -49,7 +49,7 @@ fn bench_elasticsearch(b: &mut Bencher) {
     let global_labels = prepared_config.global_labels.iter()
         .map(|global_label| {
             match global_label.url.as_str() {
-                "/" => global_label.labels.resolve(&es_info),
+                "http://example.com:9200/?" => global_label.labels.resolve(&es_info),
                 _ => unreachable!(),
             }
         })
@@ -68,19 +68,19 @@ fn bench_elasticsearch(b: &mut Bencher) {
         buf.clear();
         for endpoint in &prepared_config.endpoints {
             match endpoint.url.as_str() {
-                "/_cluster/health" => {
+                "http://example.com:9200/_cluster/health?" => {
                     let es_cluster_health = read_json(ES_CLUSTER_HEALTH);
                     endpoint.process(
                         &root_metric, &es_cluster_health, &mut buf
                     );
                     buf.write_all(b"\n\n").unwrap();
                 }
-                "/_nodes/_local/stats" => {
+                "http://example.com:9200/_nodes/_local/stats?groups=_all" => {
                     let es_nodes_stats = read_json(ES_NODES_STATS);
                     endpoint.process(&root_metric, &es_nodes_stats, &mut buf);
                     buf.write_all(b"\n\n").unwrap();
                 }
-                "/_all/_stats" => {
+                "http://example.com:9200/_all/_stats?groups=_all" => {
                     let es_indices_stats = read_json(ES_INDICES_STATS);
                     endpoint.process(&root_metric, &es_indices_stats, &mut buf);
                     buf.write_all(b"\n\n").unwrap();
